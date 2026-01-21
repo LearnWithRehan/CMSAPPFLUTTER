@@ -42,4 +42,5 @@ class ApiService {
       throw Exception("Server Error");
     }
   }
+
 }
