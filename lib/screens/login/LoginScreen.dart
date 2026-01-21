@@ -1,0 +1,212 @@
+import 'package:flutter/material.dart';
+import '../../../core/api/api_service.dart';
+import '../../../models/plant_model.dart';
+
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  List<PlantModel> plantList = [];
+  PlantModel? selectedPlant;
+  bool loading = true;
+
+  final TextEditingController usernameCtrl = TextEditingController();
+  final TextEditingController passwordCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    loadPlants();
+  }
+
+  Future<void> loadPlants() async {
+    try {
+      plantList = await ApiService.fetchPlants();
+
+      plantList.insert(
+        0,
+        PlantModel(plantCode: "0", plantName: "Select Plant"),
+      );
+
+      setState(() {
+        selectedPlant = plantList.first;
+        loading = false;
+      });
+    } catch (e) {
+      setState(() => loading = false);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFEDE7F6), // light purple
+              Color(0xFFF3E5F5),
+            ],
+          ),
+        ),
+        child: loading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 40),
+
+              /// 🔰 Logo
+              Image.asset(
+                "assets/images/loginn.png",
+                width: 150,
+                height: 150,
+                fit: BoxFit.contain,
+              ),
+
+              const SizedBox(height: 18),
+
+              /// 🏷️ Title
+              const Text(
+                "Cane Management System",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A1A),
+                ),
+              ),
+
+              const SizedBox(height: 26),
+
+              /// 🌱 Spinner Container (Android bg_spinner style)
+              Container(
+                height: 55,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<PlantModel>(
+                    value: selectedPlant,
+                    isExpanded: true,
+                    icon: const Icon(Icons.arrow_drop_down),
+                    items: plantList.map((plant) {
+                      return DropdownMenuItem<PlantModel>(
+                        value: plant,
+                        child: Text(
+                          plant.plantCode == "0"
+                              ? plant.plantName
+                              : "${plant.plantName} (${plant.plantCode})",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedPlant = value;
+                      });
+                    },
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              /// 👤 Username
+              TextField(
+                controller: usernameCtrl,
+                decoration: InputDecoration(
+                  hintText: "Username",
+                  prefixIcon: const Icon(Icons.person),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              /// 🔐 Password
+              TextField(
+                controller: passwordCtrl,
+                obscureText: true,
+                decoration: InputDecoration(
+                  hintText: "Password",
+                  prefixIcon: const Icon(Icons.lock),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              /// 🔘 Login Button (Android btn_login style)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    backgroundColor: const Color(0xFF6A1B9A),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  onPressed: () {
+                    if (selectedPlant == null ||
+                        selectedPlant!.plantCode == "0") {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text("Please select plant")),
+                      );
+                      return;
+                    }
+
+                    debugPrint(
+                        "Plant Code: ${selectedPlant!.plantCode}");
+                    debugPrint(
+                        "Plant Name: ${selectedPlant!.plantName}");
+                    debugPrint("Username: ${usernameCtrl.text}");
+                    debugPrint("Password: ${passwordCtrl.text}");
+                  },
+                  child: const Text(
+                    "Login",
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
