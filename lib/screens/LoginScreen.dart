@@ -1,6 +1,9 @@
+import 'package:canemanagementsystem/screens/dashboard_screen.dart';
 import 'package:flutter/material.dart';
-import '../../../core/api/api_service.dart';
-import '../../../models/plant_model.dart';
+import '../../core/api/api_service.dart';
+import '../../models/plant_model.dart';
+import '../core/api/storage/app_storage.dart';
+import '../models/login_request.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -177,23 +180,72 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  onPressed: () {
-                    if (selectedPlant == null ||
-                        selectedPlant!.plantCode == "0") {
+                  onPressed: () async {
+
+                    if (usernameCtrl.text.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text("Please select plant")),
+                        const SnackBar(content: Text("Enter User ID")),
                       );
                       return;
                     }
 
-                    debugPrint(
-                        "Plant Code: ${selectedPlant!.plantCode}");
-                    debugPrint(
-                        "Plant Name: ${selectedPlant!.plantName}");
-                    debugPrint("Username: ${usernameCtrl.text}");
-                    debugPrint("Password: ${passwordCtrl.text}");
+                    if (passwordCtrl.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Enter Password")),
+                      );
+                      return;
+                    }
+
+                    if (selectedPlant == null ||
+                        selectedPlant!.plantCode == "0") {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Please select plant")),
+                      );
+                      return;
+                    }
+
+                    try {
+                      final response = await ApiService.login(
+                        LoginRequest(
+                          userId: usernameCtrl.text.trim(),
+                          password: passwordCtrl.text.trim(),
+                          plantCode: selectedPlant!.plantCode,
+                        ),
+                      );
+
+                      if (response.success == 1) {
+
+                        await Prefs.saveLogin(
+                          userId: response.user!.userId,
+                          role: response.user!.userRole,
+                          plantCode: selectedPlant!.plantCode,
+                          permissions: response.permissions,
+                        );
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Login Success")),
+                        );
+
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const DashboardScreen(),
+                          ),
+                        );
+
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(response.message)),
+                        );
+                      }
+
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(e.toString())),
+                      );
+                    }
                   },
+
                   child: const Text(
                     "Login",
                     style: TextStyle(
