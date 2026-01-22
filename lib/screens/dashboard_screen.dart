@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api/api_service.dart';
-
+import 'LoginScreen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -76,17 +76,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFAEBBDA),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+    return WillPopScope(
+      onWillPop: () async {
+        /// 🔴 BACK PRESS → LOGIN SCREEN (Java onBackPressed)
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+              (route) => false,
+        );
+        return false; // app close hone se roke
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFAEBBDA),
+        body: SafeArea(
           child: Column(
             children: [
 
-              /// 🔷 HEADER (Plant Name)
+              /// 🔷 FIXED HEADER
               Container(
-                margin: const EdgeInsets.only(top: 20, bottom: 16),
+                margin: const EdgeInsets.fromLTRB(16, 20, 16, 16),
                 padding: const EdgeInsets.all(20),
                 width: double.infinity,
                 decoration: BoxDecoration(
@@ -105,76 +113,64 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
 
-              /// 🔲 GRID
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 1.1,
-                children: [
+              /// 🔲 ONLY GRID SCROLLS
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 1.1,
+                    children: [
 
-                  if (isAllowed(P_GRAPH))
-                    dashboardItem("Inflow Analysis", Icons.bar_chart,
-                            () => openIfAllowed(P_GRAPH, const Placeholder())),
+                      if (isAllowed(P_GRAPH))
+                        dashboardItem("Inflow Analysis", Icons.bar_chart),
 
-                  if (isAllowed(P_YARD))
-                    dashboardItem("Yard Position", Icons.warehouse,
-                            () => openIfAllowed(P_YARD, const Placeholder())),
+                      if (isAllowed(P_YARD))
+                        dashboardItem("Yard Position", Icons.warehouse),
 
-                  if (isAllowed(P_HOURLY))
-                    dashboardItem("Hourly Report", Icons.schedule,
-                            () => openIfAllowed(P_HOURLY, const Placeholder())),
+                      if (isAllowed(P_HOURLY))
+                        dashboardItem("Hourly Report", Icons.schedule),
 
-                  if (isAllowed(P_CENTRE))
-                    dashboardItem("CentreWise", Icons.location_city,
-                            () => openIfAllowed(P_CENTRE, const Placeholder())),
+                      if (isAllowed(P_CENTRE))
+                        dashboardItem("CentreWise", Icons.location_city),
 
-                  if (isAllowed(P_VARIETY))
-                    dashboardItem("VarietyWise", Icons.agriculture,
-                            () => openIfAllowed(P_VARIETY, const Placeholder())),
+                      if (isAllowed(P_VARIETY))
+                        dashboardItem("VarietyWise", Icons.agriculture),
 
-                  if (isAllowed(P_PAYMENT))
-                    dashboardItem("CentreWise Total", Icons.summarize,
-                            () => openIfAllowed(P_PAYMENT, const Placeholder())),
+                      if (isAllowed(P_PAYMENT))
+                        dashboardItem("CentreWise Total", Icons.summarize),
 
-                  if (isAllowed(P_GROWER))
-                    dashboardItem("Grower Ledger", Icons.person,
-                            () => openIfAllowed(P_GROWER, const Placeholder())),
+                      if (isAllowed(P_GROWER))
+                        dashboardItem("Grower Ledger", Icons.person),
 
-                  if (isAllowed(P_CONTRACTOR))
-                    dashboardItem("Transporter Details", Icons.local_shipping,
-                            () => openIfAllowed(P_CONTRACTOR, const Placeholder())),
+                      if (isAllowed(P_CONTRACTOR))
+                        dashboardItem("Transporter Details", Icons.local_shipping),
 
-                  if (isAllowed(P_CENTREMILL))
-                    dashboardItem("Centre & Mill Gate", Icons.factory,
-                            () => openIfAllowed(P_CENTREMILL, const Placeholder())),
+                      if (isAllowed(P_CENTREMILL))
+                        dashboardItem("Centre & Mill Gate", Icons.factory),
 
-                  if (isAllowed(P_VILLAGE))
-                    dashboardItem("Village Purchase", Icons.location_on,
-                            () => openIfAllowed(P_VILLAGE, const Placeholder())),
+                      if (isAllowed(P_VILLAGE))
+                        dashboardItem("Village Purchase", Icons.location_on),
 
-                  if (isAllowed(P_USER))
-                    dashboardItem("Create User", Icons.person_add,
-                            () => openIfAllowed(P_USER, const Placeholder())),
+                      if (isAllowed(P_USER))
+                        dashboardItem("Create User", Icons.person_add),
 
-                  if (isAllowed(P_WBCONTROL))
-                    dashboardItem("WB CONTROL", Icons.settings,
-                            () => openIfAllowed(P_WBCONTROL, const Placeholder())),
+                      if (isAllowed(P_WBCONTROL))
+                        dashboardItem("WB CONTROL", Icons.settings),
 
-                  if (isAllowed(P_SCREENMASTER))
-                    dashboardItem("SCREEN MASTER", Icons.dashboard_customize,
-                            () => openIfAllowed(P_SCREENMASTER, const Placeholder())),
+                      if (isAllowed(P_SCREENMASTER))
+                        dashboardItem("SCREEN MASTER", Icons.dashboard_customize),
 
-                  if (isAllowed(P_WBRANGE))
-                    dashboardItem("WB RANGE", Icons.tune,
-                            () => openIfAllowed(P_WBRANGE, const Placeholder())),
+                      if (isAllowed(P_WBRANGE))
+                        dashboardItem("WB RANGE", Icons.tune),
 
-                  if (isAllowed(P_ROLEMASTER))
-                    dashboardItem("ROLE MASTER", Icons.security,
-                            () => openIfAllowed(P_ROLEMASTER, const Placeholder())),
-                ],
+                      if (isAllowed(P_ROLEMASTER))
+                        dashboardItem("ROLE MASTER", Icons.security),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
@@ -184,9 +180,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   /// ================= CARD =================
-  Widget dashboardItem(String title, IconData icon, VoidCallback onTap) {
+  Widget dashboardItem(String title, IconData icon) {
     return InkWell(
-      onTap: onTap,
+      onTap: () {},
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -201,11 +197,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Icon(icon, size: 48, color: const Color(0xFF2C4D76)),
             const SizedBox(height: 8),
-            Text(title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF2C4D76))),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 16,
+                color: Color(0xFF2C4D76),
+              ),
+            ),
           ],
         ),
       ),
