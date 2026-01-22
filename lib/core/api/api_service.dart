@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import '../../models/cane_day_data.dart';
 import '../../models/plant_model.dart';
 import '../../models/login_request.dart';
 import '../../models/login_response.dart';
@@ -82,4 +83,43 @@ class ApiService {
       throw Exception(jsonData['message']);
     }
   }
+
+
+  //daily wise cane graph
+
+  static Future<List<CaneDayData>> fetchCaneTrend(String plantCode) async {
+    final response = await http.post(
+      Uri.parse("${ApiConstants.baseUrl}dayWiseCaneTrend.php"),
+      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+      body: {"plantCode": plantCode},
+    );
+
+    final jsonData = json.decode(response.body);
+
+    if (jsonData['success'] == 1) {
+      return (jsonData['data'] as List)
+          .map((e) => CaneDayData.fromJson(e))
+          .toList();
+    } else {
+      throw Exception(jsonData['message']);
+    }
+  }
+
+  static Future<double> fetchGrandTotal(String plantCode) async {
+    final response = await http.post(
+      Uri.parse("${ApiConstants.baseUrl}HourlyReportTotPurGraphp.php"),
+      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+      body: {"plantCode": plantCode},
+    );
+
+    final jsonData = json.decode(response.body);
+
+    if (jsonData['success'] == 1) {
+      return (jsonData['grand_total'] as num).toDouble();
+    } else {
+      throw Exception(jsonData['message']);
+    }
+  }
+
+
 }

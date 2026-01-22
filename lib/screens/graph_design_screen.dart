@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'cane_trend_graph_screen.dart';
 
 class GraphDesign_Screen extends StatelessWidget {
   const GraphDesign_Screen({super.key});
@@ -18,13 +19,20 @@ class GraphDesign_Screen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+
+            /// ✅ DAY WISE → OPEN CaneTrendGraphScreen
             _reportCard(
               title: "Day Wise Cane Arrival",
               subtitle: "Daily cane arrival trend graph",
               iconColor: Colors.green,
               borderColor: Colors.green,
               onTap: () {
-                // Navigator.push(...)
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const CaneTrendGraphScreen(),
+                  ),
+                );
               },
             ),
 
@@ -33,6 +41,9 @@ class GraphDesign_Screen extends StatelessWidget {
               subtitle: "Centre wise daily cane analysis",
               iconColor: const Color(0xFFE89309),
               borderColor: Colors.blue,
+              onTap: () {
+                // next screen later
+              },
             ),
 
             _reportCard(
@@ -40,6 +51,9 @@ class GraphDesign_Screen extends StatelessWidget {
               subtitle: "Centre wise Total cane analysis",
               iconColor: Colors.blue,
               borderColor: Colors.blue,
+              onTap: () {
+                // next screen later
+              },
             ),
 
             _reportCard(
@@ -47,6 +61,9 @@ class GraphDesign_Screen extends StatelessWidget {
               subtitle: "Daily cane arrival analysis by variety",
               iconColor: Colors.red,
               borderColor: Colors.blue,
+              onTap: () {
+                // next screen later
+              },
             ),
           ],
         ),
@@ -54,12 +71,13 @@ class GraphDesign_Screen extends StatelessWidget {
     );
   }
 
+  /// ================= REPORT CARD =================
   Widget _reportCard({
     required String title,
     required String subtitle,
     required Color iconColor,
     required Color borderColor,
-    VoidCallback? onTap,
+    required VoidCallback onTap,
   }) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
