@@ -1,7 +1,43 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../core/api/api_service.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+
+  /// ✅ YAHAN DECLARE
+  String plantName = "";
+
+  @override
+  void initState() {
+    super.initState();
+    loadPlantName();
+  }
+
+  /// ✅ API + SharedPreferences
+  Future<void> loadPlantName() async {
+    try {
+      final sp = await SharedPreferences.getInstance();
+      final plantCode = sp.getString("PLANT_CODE") ?? "";
+
+      if (plantCode.isEmpty) return;
+
+      final name =
+      await ApiService.fetchPlantNameByCode(plantCode);
+
+      setState(() {
+        plantName = name;
+      });
+    } catch (e) {
+      debugPrint("Plant Name Error: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +58,11 @@ class DashboardScreen extends StatelessWidget {
                   color: const Color(0xFF608A88),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text(
-                  "Cane Management System",
-                  style: TextStyle(
+                child: Text(
+                  plantName.isEmpty
+                      ? "Cane Management System"
+                      : plantName,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
@@ -42,95 +80,21 @@ class DashboardScreen extends StatelessWidget {
                 childAspectRatio: 1.1,
                 children: [
 
-                  dashboardItem(
-                    icon: Icons.bar_chart,
-                    title: "Inflow Analysis",
-                    onTap: () {},
-                  ),
-
-                  dashboardItem(
-                    icon: Icons.warehouse,
-                    title: "Yard Position",
-                    onTap: () {},
-                  ),
-
-                  dashboardItem(
-                    icon: Icons.schedule,
-                    title: "Hourly Report",
-                    onTap: () {},
-                  ),
-
-                  dashboardItem(
-                    icon: Icons.location_city,
-                    title: "CentreWise",
-                    onTap: () {},
-                  ),
-
-                  dashboardItem(
-                    icon: Icons.agriculture,
-                    title: "VarietyWise",
-                    onTap: () {},
-                  ),
-
-                  dashboardItem(
-                    icon: Icons.summarize,
-                    title: "CentreWise Total",
-                    onTap: () {},
-                  ),
-
-                  dashboardItem(
-                    icon: Icons.person,
-                    title: "Grower Ledger",
-                    onTap: () {},
-                  ),
-
-                  dashboardItem(
-                    icon: Icons.local_shipping,
-                    title: "Transporter Details",
-                    onTap: () {},
-                  ),
-
-                  dashboardItem(
-                    icon: Icons.factory,
-                    title: "Centre & Mill Gate",
-                    onTap: () {},
-                  ),
-
-                  dashboardItem(
-                    icon: Icons.location_on,
-                    title: "Village Purchase",
-                    onTap: () {},
-                  ),
-
-                  dashboardItem(
-                    icon: Icons.person_add,
-                    title: "Create User",
-                    onTap: () {},
-                  ),
-
-                  dashboardItem(
-                    icon: Icons.settings,
-                    title: "WB CONTROL",
-                    onTap: () {},
-                  ),
-
-                  dashboardItem(
-                    icon: Icons.dashboard_customize,
-                    title: "SCREEN MASTER",
-                    onTap: () {},
-                  ),
-
-                  dashboardItem(
-                    icon: Icons.tune,
-                    title: "WB RANGE",
-                    onTap: () {},
-                  ),
-
-                  dashboardItem(
-                    icon: Icons.security,
-                    title: "ROLE MASTER",
-                    onTap: () {},
-                  ),
+                  dashboardItem(icon: Icons.bar_chart, title: "Inflow Analysis"),
+                  dashboardItem(icon: Icons.warehouse, title: "Yard Position"),
+                  dashboardItem(icon: Icons.schedule, title: "Hourly Report"),
+                  dashboardItem(icon: Icons.location_city, title: "CentreWise"),
+                  dashboardItem(icon: Icons.agriculture, title: "VarietyWise"),
+                  dashboardItem(icon: Icons.summarize, title: "CentreWise Total"),
+                  dashboardItem(icon: Icons.person, title: "Grower Ledger"),
+                  dashboardItem(icon: Icons.local_shipping, title: "Transporter Details"),
+                  dashboardItem(icon: Icons.factory, title: "Centre & Mill Gate"),
+                  dashboardItem(icon: Icons.location_on, title: "Village Purchase"),
+                  dashboardItem(icon: Icons.person_add, title: "Create User"),
+                  dashboardItem(icon: Icons.settings, title: "WB CONTROL"),
+                  dashboardItem(icon: Icons.dashboard_customize, title: "SCREEN MASTER"),
+                  dashboardItem(icon: Icons.tune, title: "WB RANGE"),
+                  dashboardItem(icon: Icons.security, title: "ROLE MASTER"),
                 ],
               ),
             ],
@@ -144,10 +108,9 @@ class DashboardScreen extends StatelessWidget {
   Widget dashboardItem({
     required IconData icon,
     required String title,
-    required VoidCallback onTap,
   }) {
     return InkWell(
-      onTap: onTap,
+      onTap: () {},
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(12),

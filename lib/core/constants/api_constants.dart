@@ -4,5 +4,6 @@ class ApiConstants {
 
   static const String plantMaster = "plant_master.php";
   static const String login = "userAuth.php";
+  static const String plantName = "getPlantName.php";
 
 }
