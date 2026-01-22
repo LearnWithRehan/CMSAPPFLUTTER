@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api/api_service.dart';
 import 'LoginScreen.dart';
+import 'graph_design_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -60,31 +61,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return userRole == 1 || permissions.contains(permission);
   }
 
-  /// ================= NAVIGATION CHECK =================
-  void openIfAllowed(String permission, Widget screen) {
-    if (isAllowed(permission)) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => screen),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Permission Denied")),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        /// 🔴 BACK PRESS → LOGIN SCREEN (Java onBackPressed)
+        /// 🔴 BACK PRESS → LOGIN SCREEN
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const LoginScreen()),
               (route) => false,
         );
-        return false; // app close hone se roke
+        return false;
       },
       child: Scaffold(
         backgroundColor: const Color(0xFFAEBBDA),
@@ -92,7 +79,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             children: [
 
-              /// 🔷 FIXED HEADER
+              /// 🔷 HEADER
               Container(
                 margin: const EdgeInsets.fromLTRB(16, 20, 16, 16),
                 padding: const EdgeInsets.all(20),
@@ -113,7 +100,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
 
-              /// 🔲 ONLY GRID SCROLLS
+              /// 🔲 GRID
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -124,8 +111,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     childAspectRatio: 1.1,
                     children: [
 
+                      /// ✅ GRAPH SCREEN NAVIGATION
                       if (isAllowed(P_GRAPH))
-                        dashboardItem("Inflow Analysis", Icons.bar_chart),
+                        dashboardItem(
+                          "Inflow Analysis",
+                          Icons.bar_chart,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const GraphDesign_Screen(),
+                              ),
+                            );
+                          },
+                        ),
 
                       if (isAllowed(P_YARD))
                         dashboardItem("Yard Position", Icons.warehouse),
@@ -180,9 +179,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   /// ================= CARD =================
-  Widget dashboardItem(String title, IconData icon) {
+  Widget dashboardItem(
+      String title,
+      IconData icon, {
+        VoidCallback? onTap,
+      }) {
     return InkWell(
-      onTap: () {},
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
