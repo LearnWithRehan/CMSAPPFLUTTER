@@ -49,6 +49,7 @@ class _CaneTrendGraphScreenState extends State<CaneTrendGraphScreen> {
           : Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             /// 🔹 TOTAL PURCHASE
             Text(
@@ -69,61 +70,96 @@ class _CaneTrendGraphScreenState extends State<CaneTrendGraphScreen> {
   }
 
   Widget buildChart() {
-    // calculate width: har ek date ke liye 60px, min 300px
-    final chartWidth = ((graphData.length * 60).toDouble().clamp(300, double.infinity)) as double;
-
+    // har ek date ke liye 60px, minimum 300px
+    final chartWidth = ((graphData.length * 60).toDouble().clamp(300.0, double.infinity));
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: SizedBox(
-        width: chartWidth,
-        child: LineChart(
-          LineChartData(
-            minY: 0,
-            gridData: FlGridData(show: false),
-            titlesData: FlTitlesData(
-              bottomTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  interval: 1,
-                  getTitlesWidget: (value, meta) {
-                    final index = value.toInt();
-                    if (index < graphData.length) {
-                      return Transform.rotate(
-                        angle: -0.8, // rotate for better fit
-                        child: Text(
-                          graphData[index].date,
-                          style: const TextStyle(fontSize: 10),
-                        ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0), // left-right padding
+        child: SizedBox(
+          width: chartWidth,
+          child: LineChart(
+            LineChartData(
+              minY: 0,
+              gridData: FlGridData(
+                show: true,
+                drawVerticalLine: true,
+                horizontalInterval: 50,
+                verticalInterval: 1,
+                getDrawingHorizontalLine: (value) {
+                  return FlLine(
+                    color: Colors.grey.withOpacity(0.3),
+                    strokeWidth: 1,
+                  );
+                },
+              ),
+              titlesData: FlTitlesData(
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    interval: 1,
+                    reservedSize: 50,
+                    getTitlesWidget: (value, meta) {
+                      final index = value.toInt();
+                      if (index < graphData.length) {
+                        return Transform.rotate(
+                          angle: -0.8, // rotate for better fit
+                          child: Text(
+                            graphData[index].date,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ),
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 40,
+                    interval: (grandTotal / 5).ceilToDouble(), // dynamic interval
+                    getTitlesWidget: (value, meta) {
+                      return Text(
+                        value.toInt().toString(),
+                        style: const TextStyle(fontSize: 10),
                       );
-                    }
-                    return const Text("");
-                  },
+                    },
+                  ),
+                ),
+                topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              ),
+              borderData: FlBorderData(
+                show: true,
+                border: const Border(
+                  left: BorderSide(color: Colors.black, width: 1),
+                  bottom: BorderSide(color: Colors.black, width: 1),
                 ),
               ),
-              leftTitles: AxisTitles(
-                sideTitles: SideTitles(showTitles: true),
-              ),
+              lineBarsData: [
+                LineChartBarData(
+                  spots: graphData
+                      .asMap()
+                      .entries
+                      .map((e) => FlSpot(
+                    e.key.toDouble(),
+                    e.value.totalCane.toDouble(),
+                  ))
+                      .toList(),
+                  isCurved: true,
+                  barWidth: 3,
+                  dotData: FlDotData(show: true),
+                  belowBarData: BarAreaData(show: false),
+                  color: Colors.blueAccent,
+                ),
+              ],
             ),
-            borderData: FlBorderData(show: true),
-            lineBarsData: [
-              LineChartBarData(
-                spots: graphData
-                    .asMap()
-                    .entries
-                    .map((e) => FlSpot(
-                  e.key.toDouble(),
-                  e.value.totalCane.toDouble(), // ✅ convert to double
-                ))
-                    .toList(),
-                isCurved: true,
-                barWidth: 3,
-                dotData: FlDotData(show: true),
-                belowBarData: BarAreaData(show: false),
-              ),
-            ],
           ),
-          duration: const Duration(milliseconds: 1000),
         ),
       ),
     );
