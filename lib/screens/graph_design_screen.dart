@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'cane_trend_graph_screen.dart';
+import 'centre_wise_cane_trend_screen.dart';
 
 class GraphDesign_Screen extends StatelessWidget {
   const GraphDesign_Screen({super.key});
@@ -42,9 +43,15 @@ class GraphDesign_Screen extends StatelessWidget {
               iconColor: const Color(0xFFE89309),
               borderColor: Colors.blue,
               onTap: () {
-                // next screen later
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const DayWiseCentreGraphScreen(),
+                  ),
+                );
               },
             ),
+
 
             _reportCard(
               title: "Centre Wise Total Cane Pur",

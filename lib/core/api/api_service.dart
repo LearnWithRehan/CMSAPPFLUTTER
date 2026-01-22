@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../models/cane_day_data.dart';
+import '../../models/day_wise_centre_graph_model.dart';
 import '../../models/plant_model.dart';
 import '../../models/login_request.dart';
 import '../../models/login_response.dart';
@@ -120,6 +121,37 @@ class ApiService {
       throw Exception(jsonData['message']);
     }
   }
+
+
+
+  // 📊 Centre wise day graph
+  static Future<List<DayWiseCentreGraphModel>>
+  fetchDayWiseCentreGraph(String plantCode) async {
+
+    final response = await http.post(
+      Uri.parse(
+          "${ApiConstants.baseUrl}DailyCentreWiseCaneArrival.php"),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+      },
+    );
+
+    final jsonData = json.decode(response.body);
+
+    if (jsonData['success'] == 1) {
+      return (jsonData['data'] as List)
+          .map((e) =>
+          DayWiseCentreGraphModel.fromJson(e))
+          .toList();
+    } else {
+      throw Exception(jsonData['message']);
+    }
+  }
+
+
 
 
 }
