@@ -52,8 +52,9 @@ class _CaneTrendGraphScreenState extends State<CaneTrendGraphScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Total Purchase
             Text(
-              "Todate Purchase : ${grandTotal.toStringAsFixed(2)}",
+              "Todate Purchase: ${grandTotal.toStringAsFixed(2)} Qt",
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -68,11 +69,12 @@ class _CaneTrendGraphScreenState extends State<CaneTrendGraphScreen> {
   }
 
   Widget buildChart() {
-    if (graphData.isEmpty) return const SizedBox();
+    if (graphData.isEmpty) return const Center(child: Text("No Data"));
 
     final maxY = graphData.map((e) => e.totalCane.toDouble()).reduce(max);
     final roundedMaxY = ((maxY / 5000).ceil() * 5000).toDouble();
-    final chartWidth = max(graphData.length * 80.0, MediaQuery.of(context).size.width);
+    final chartWidth =
+    max(graphData.length * 100.0, MediaQuery.of(context).size.width);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -80,26 +82,26 @@ class _CaneTrendGraphScreenState extends State<CaneTrendGraphScreen> {
         width: chartWidth,
         child: Stack(
           children: [
+            // ------------------ LineChart ------------------
             LineChart(
               LineChartData(
                 minY: 0,
-                maxY: roundedMaxY, // 🔹 prevent clipping at edges
+                maxY: roundedMaxY,
+               // prevent clipping at edges
                 gridData: FlGridData(
                   show: true,
                   horizontalInterval: roundedMaxY / 6,
                   drawVerticalLine: true,
-                  getDrawingHorizontalLine: (value) => FlLine(
-                    color: Colors.grey.shade300,
-                    strokeWidth: 1,
-                  ),
-                  getDrawingVerticalLine: (value) => FlLine(
-                    color: Colors.grey.shade200,
-                    strokeWidth: 1,
-                  ),
+                  getDrawingHorizontalLine: (value) =>
+                      FlLine(color: Colors.grey.shade300, strokeWidth: 1),
+                  getDrawingVerticalLine: (value) =>
+                      FlLine(color: Colors.grey.shade200, strokeWidth: 1),
                 ),
                 titlesData: FlTitlesData(
-                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -122,10 +124,11 @@ class _CaneTrendGraphScreenState extends State<CaneTrendGraphScreen> {
                         final index = value.toInt();
                         if (index >= graphData.length) return const SizedBox.shrink();
 
-                        // 🔹 Add left/right padding for first & last
+                        // Add left/right padding for first & last
                         EdgeInsets padding = EdgeInsets.zero;
-                        if (index == 0) padding = const EdgeInsets.only(left: 12);
-                        if (index == graphData.length - 1) padding = const EdgeInsets.only(right: 12);
+                        if (index == 0) padding = const EdgeInsets.only(left: 20);
+                        if (index == graphData.length - 1)
+                          padding = const EdgeInsets.only(right: 20);
 
                         return Padding(
                           padding: padding.add(const EdgeInsets.only(top: 8)),
@@ -157,7 +160,8 @@ class _CaneTrendGraphScreenState extends State<CaneTrendGraphScreen> {
                     spots: graphData
                         .asMap()
                         .entries
-                        .map((e) => FlSpot(e.key.toDouble(), e.value.totalCane.toDouble()))
+                        .map((e) => FlSpot(
+                        e.key.toDouble(), e.value.totalCane.toDouble()))
                         .toList(),
                   ),
                 ],
@@ -165,32 +169,47 @@ class _CaneTrendGraphScreenState extends State<CaneTrendGraphScreen> {
               ),
             ),
 
-            // 🔹 Overlay values above dots
+            // ------------------ Overlay values above dots ------------------
             Positioned.fill(
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  if (graphData.isEmpty) return const SizedBox();
                   final chartHeight = constraints.maxHeight;
                   final chartWidthActual = chartWidth;
 
                   return Stack(
                     children: graphData.asMap().entries.map((e) {
-                      // 🔹 Adjust x-position for first and last dot
-                      double x = e.key.toDouble() / (graphData.length - 1) * chartWidthActual;
-                      if (e.key == 0) x += 12; // start margin
-                      if (e.key == graphData.length - 1) x -= 12; // end margin
+                      // X position adjustment for first and last dots
+                      double x =
+                          e.key.toDouble() / (graphData.length - 1) * chartWidthActual;
+                      if (e.key == 0) x += 20;
+                      if (e.key == graphData.length - 1) x -= 20;
 
-                      final y = chartHeight - (e.value.totalCane.toDouble() / roundedMaxY * chartHeight);
+                      final y =
+                          chartHeight - (e.value.totalCane.toDouble() / roundedMaxY * chartHeight);
 
                       return Positioned(
-                        left: x - 15, // center text above dot
-                        top: y - 25, // above the dot
-                        child: Text(
-                          e.value.totalCane.toStringAsFixed(2),
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
+                        left: x - 20,
+                        top: y - 28,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 3, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(4),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 2,
+                                  offset: const Offset(0, 1))
+                            ],
+                          ),
+                          child: Text(
+                            e.value.totalCane.toStringAsFixed(2),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
                           ),
                         ),
                       );
@@ -203,6 +222,5 @@ class _CaneTrendGraphScreenState extends State<CaneTrendGraphScreen> {
         ),
       ),
     );
-
   }
 }
