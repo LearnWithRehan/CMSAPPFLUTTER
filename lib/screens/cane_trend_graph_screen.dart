@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -51,7 +52,6 @@ class _CaneTrendGraphScreenState extends State<CaneTrendGraphScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// 🔹 TOTAL PURCHASE
             Text(
               "Todate Purchase : ${grandTotal.toStringAsFixed(2)}",
               style: const TextStyle(
@@ -60,8 +60,6 @@ class _CaneTrendGraphScreenState extends State<CaneTrendGraphScreen> {
               ),
             ),
             const SizedBox(height: 20),
-
-            /// 🔹 LINE CHART
             Expanded(child: buildChart()),
           ],
         ),
@@ -70,98 +68,141 @@ class _CaneTrendGraphScreenState extends State<CaneTrendGraphScreen> {
   }
 
   Widget buildChart() {
-    // har ek date ke liye 60px, minimum 300px
-    final chartWidth = ((graphData.length * 60).toDouble().clamp(300.0, double.infinity));
+    if (graphData.isEmpty) return const SizedBox();
+
+    final maxY = graphData.map((e) => e.totalCane.toDouble()).reduce(max);
+    final roundedMaxY = ((maxY / 5000).ceil() * 5000).toDouble();
+    final chartWidth = max(graphData.length * 80.0, MediaQuery.of(context).size.width);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0), // left-right padding
-        child: SizedBox(
-          width: chartWidth,
-          child: LineChart(
-            LineChartData(
-              minY: 0,
-              gridData: FlGridData(
-                show: true,
-                drawVerticalLine: true,
-                horizontalInterval: 50,
-                verticalInterval: 1,
-                getDrawingHorizontalLine: (value) {
-                  return FlLine(
-                    color: Colors.grey.withOpacity(0.3),
+      child: SizedBox(
+        width: chartWidth,
+        child: Stack(
+          children: [
+            LineChart(
+              LineChartData(
+                minY: 0,
+                maxY: roundedMaxY, // 🔹 prevent clipping at edges
+                gridData: FlGridData(
+                  show: true,
+                  horizontalInterval: roundedMaxY / 6,
+                  drawVerticalLine: true,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: Colors.grey.shade300,
                     strokeWidth: 1,
-                  );
-                },
-              ),
-              titlesData: FlTitlesData(
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    interval: 1,
-                    reservedSize: 50,
-                    getTitlesWidget: (value, meta) {
-                      final index = value.toInt();
-                      if (index < graphData.length) {
-                        return Transform.rotate(
-                          angle: -0.8, // rotate for better fit
-                          child: Text(
-                            graphData[index].date,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
+                  ),
+                  getDrawingVerticalLine: (value) => FlLine(
+                    color: Colors.grey.shade200,
+                    strokeWidth: 1,
+                  ),
+                ),
+                titlesData: FlTitlesData(
+                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 50,
+                      interval: roundedMaxY / 6,
+                      getTitlesWidget: (value, meta) {
+                        return Text(
+                          value.toInt().toString(),
+                          style: const TextStyle(fontSize: 11),
+                        );
+                      },
+                    ),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      interval: 1,
+                      reservedSize: 55,
+                      getTitlesWidget: (value, meta) {
+                        final index = value.toInt();
+                        if (index >= graphData.length) return const SizedBox.shrink();
+
+                        // 🔹 Add left/right padding for first & last
+                        EdgeInsets padding = EdgeInsets.zero;
+                        if (index == 0) padding = const EdgeInsets.only(left: 12);
+                        if (index == graphData.length - 1) padding = const EdgeInsets.only(right: 12);
+
+                        return Padding(
+                          padding: padding.add(const EdgeInsets.only(top: 8)),
+                          child: Transform.rotate(
+                            angle: -0.7,
+                            child: Text(
+                              graphData[index].date,
+                              style: const TextStyle(fontSize: 10),
                             ),
                           ),
                         );
-                      }
-                      return const SizedBox.shrink();
-                    },
+                      },
+                    ),
                   ),
                 ),
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 40,
-                    interval: (grandTotal / 5).ceilToDouble(), // dynamic interval
-                    getTitlesWidget: (value, meta) {
-                      return Text(
-                        value.toInt().toString(),
-                        style: const TextStyle(fontSize: 10),
-                      );
-                    },
+                borderData: FlBorderData(
+                  show: true,
+                  border: Border(
+                    left: BorderSide(color: Colors.black.withOpacity(0.6)),
+                    bottom: BorderSide(color: Colors.black.withOpacity(0.6)),
                   ),
                 ),
-                topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                lineBarsData: [
+                  LineChartBarData(
+                    isCurved: true,
+                    color: Colors.cyanAccent.shade700,
+                    barWidth: 3,
+                    dotData: FlDotData(show: true),
+                    spots: graphData
+                        .asMap()
+                        .entries
+                        .map((e) => FlSpot(e.key.toDouble(), e.value.totalCane.toDouble()))
+                        .toList(),
+                  ),
+                ],
+                lineTouchData: LineTouchData(enabled: false),
               ),
-              borderData: FlBorderData(
-                show: true,
-                border: const Border(
-                  left: BorderSide(color: Colors.black, width: 1),
-                  bottom: BorderSide(color: Colors.black, width: 1),
-                ),
-              ),
-              lineBarsData: [
-                LineChartBarData(
-                  spots: graphData
-                      .asMap()
-                      .entries
-                      .map((e) => FlSpot(
-                    e.key.toDouble(),
-                    e.value.totalCane.toDouble(),
-                  ))
-                      .toList(),
-                  isCurved: true,
-                  barWidth: 3,
-                  dotData: FlDotData(show: true),
-                  belowBarData: BarAreaData(show: false),
-                  color: Colors.blueAccent,
-                ),
-              ],
             ),
-          ),
+
+            // 🔹 Overlay values above dots
+            Positioned.fill(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  if (graphData.isEmpty) return const SizedBox();
+                  final chartHeight = constraints.maxHeight;
+                  final chartWidthActual = chartWidth;
+
+                  return Stack(
+                    children: graphData.asMap().entries.map((e) {
+                      // 🔹 Adjust x-position for first and last dot
+                      double x = e.key.toDouble() / (graphData.length - 1) * chartWidthActual;
+                      if (e.key == 0) x += 12; // start margin
+                      if (e.key == graphData.length - 1) x -= 12; // end margin
+
+                      final y = chartHeight - (e.value.totalCane.toDouble() / roundedMaxY * chartHeight);
+
+                      return Positioned(
+                        left: x - 15, // center text above dot
+                        top: y - 25, // above the dot
+                        child: Text(
+                          e.value.totalCane.toStringAsFixed(2),
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
+
   }
 }
