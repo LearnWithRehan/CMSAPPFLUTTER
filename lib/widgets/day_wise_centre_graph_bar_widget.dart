@@ -16,14 +16,13 @@ class DayWiseCentreGraphBarWidget extends StatelessWidget {
     final dayTotal =
     data.centres.fold<double>(0, (s, e) => s + e.totalCane);
 
-    /// dynamic width for horizontal scroll
     final chartWidth = max(
       data.centres.length * 65.0,
       MediaQuery.of(context).size.width - 32,
     );
 
+    /// 🔥 EXACT MAX (NO ROUND)
     final maxY = data.centres.map((e) => e.totalCane).reduce(max);
-    final roundedMaxY = ((maxY / 500).ceil() * 500).toDouble();
 
     return Card(
       elevation: 6,
@@ -36,7 +35,7 @@ class DayWiseCentreGraphBarWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// 🔹 DATE
+            /// DATE
             Text(
               data.date,
               style: const TextStyle(
@@ -47,7 +46,7 @@ class DayWiseCentreGraphBarWidget extends StatelessWidget {
 
             const SizedBox(height: 4),
 
-            /// 🔹 TOTAL
+            /// TOTAL
             Text(
               "Total : ${dayTotal.toStringAsFixed(2)}",
               style: const TextStyle(
@@ -58,7 +57,7 @@ class DayWiseCentreGraphBarWidget extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            /// 🔹 HORIZONTAL SCROLL BAR CHART
+            /// HORIZONTAL SCROLL BAR CHART
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: SizedBox(
@@ -66,61 +65,65 @@ class DayWiseCentreGraphBarWidget extends StatelessWidget {
                 height: 280,
                 child: BarChart(
                   BarChartData(
-                    maxY: roundedMaxY + (roundedMaxY * 0.1),
                     minY: 0,
-                    alignment: BarChartAlignment.spaceBetween,
+                    maxY: maxY + (maxY * 0.05), // 👈 slight headroom only
 
-                    /// ❌ disable touch
+                    alignment: BarChartAlignment.spaceBetween,
                     barTouchData: BarTouchData(enabled: false),
 
-                    /// 🔹 GRID
+                    /// GRID
                     gridData: FlGridData(
                       show: true,
                       drawVerticalLine: false,
-                      horizontalInterval: roundedMaxY / 5,
+                      horizontalInterval: maxY / 5,
                       getDrawingHorizontalLine: (value) => FlLine(
                         color: Colors.grey.shade300,
                         strokeWidth: 1,
                       ),
                     ),
 
-                    /// 🔹 TITLES
+                    /// TITLES
                     titlesData: FlTitlesData(
+                      /// 🔥 EXACT VALUE ABOVE BAR
                       topTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
-                          reservedSize: 28,
+                          reservedSize: 20,
                           getTitlesWidget: (value, meta) {
                             final index = value.toInt();
                             if (index >= data.centres.length) {
                               return const SizedBox();
                             }
                             return Text(
-                              data.centres[index]
-                                  .totalCane
-                                  .toStringAsFixed(0),
+                              data.centres[index].totalCane.toString(),
+                              textAlign: TextAlign.center,
                               style: const TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
+                                color: Colors.black,
                               ),
                             );
                           },
                         ),
                       ),
+
                       rightTitles: AxisTitles(
                         sideTitles: SideTitles(showTitles: false),
                       ),
+
+                      /// LEFT AXIS → EXACT VALUES
                       leftTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
-                          reservedSize: 40,
-                          interval: roundedMaxY / 5,
+                          reservedSize: 45,
+                          interval: maxY / 5,
                           getTitlesWidget: (value, meta) => Text(
-                            value.toInt().toString(),
+                            value.toStringAsFixed(0),
                             style: const TextStyle(fontSize: 10),
                           ),
                         ),
                       ),
+
                       bottomTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
@@ -145,7 +148,7 @@ class DayWiseCentreGraphBarWidget extends StatelessWidget {
                       ),
                     ),
 
-                    /// 🔹 BORDER
+                    /// BORDER
                     borderData: FlBorderData(
                       show: true,
                       border: Border(
@@ -154,11 +157,10 @@ class DayWiseCentreGraphBarWidget extends StatelessWidget {
                       ),
                     ),
 
-                    /// 🔹 BAR GROUPS
+                    /// BARS
                     barGroups: data.centres.asMap().entries.map((e) {
                       return BarChartGroupData(
                         x: e.key,
-                        barsSpace: 2,
                         barRods: [
                           BarChartRodData(
                             toY: e.value.totalCane,
@@ -176,7 +178,7 @@ class DayWiseCentreGraphBarWidget extends StatelessWidget {
 
             const SizedBox(height: 10),
 
-            /// 🔹 LEGEND
+            /// LEGEND
             Row(
               children: const [
                 Icon(Icons.square, size: 14, color: Color(0xFF9BEAFF)),
