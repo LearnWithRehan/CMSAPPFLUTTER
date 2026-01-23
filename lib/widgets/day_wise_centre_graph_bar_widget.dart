@@ -21,7 +21,6 @@ class DayWiseCentreGraphBarWidget extends StatelessWidget {
       MediaQuery.of(context).size.width - 32,
     );
 
-    /// 🔥 EXACT MAX (NO ROUND)
     final maxY = data.centres.map((e) => e.totalCane).reduce(max);
 
     return Card(
@@ -57,19 +56,42 @@ class DayWiseCentreGraphBarWidget extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            /// HORIZONTAL SCROLL BAR CHART
+            /// BAR CHART
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: SizedBox(
                 width: chartWidth,
-                height: 280,
+                height: 300, // 🔥 increased height
                 child: BarChart(
                   BarChartData(
                     minY: 0,
-                    maxY: maxY + (maxY * 0.05), // 👈 slight headroom only
+                    maxY: maxY * 1.18, // 🔥 IMPORTANT: enough headroom
 
                     alignment: BarChartAlignment.spaceBetween,
-                    barTouchData: BarTouchData(enabled: false),
+
+                    /// 🔥 VALUE JUST ABOVE BAR (JAVA STYLE)
+                    barTouchData: BarTouchData(
+                      enabled: true,
+                      allowTouchBarBackDraw: false,
+                      handleBuiltInTouches: false,
+                      touchTooltipData: BarTouchTooltipData(
+                        tooltipBgColor: Colors.transparent,
+                        tooltipPadding:
+                        const EdgeInsets.only(bottom: 4),
+                        tooltipMargin: 10, // 🔥 push inside canvas
+                        getTooltipItem:
+                            (group, groupIndex, rod, rodIndex) {
+                          return BarTooltipItem(
+                            rod.toY.toStringAsFixed(2),
+                            const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
 
                     /// GRID
                     gridData: FlGridData(
@@ -82,36 +104,14 @@ class DayWiseCentreGraphBarWidget extends StatelessWidget {
                       ),
                     ),
 
-                    /// TITLES
+                    /// AXIS TITLES
                     titlesData: FlTitlesData(
-                      /// 🔥 EXACT VALUE ABOVE BAR
                       topTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          reservedSize: 20,
-                          getTitlesWidget: (value, meta) {
-                            final index = value.toInt();
-                            if (index >= data.centres.length) {
-                              return const SizedBox();
-                            }
-                            return Text(
-                              data.centres[index].totalCane.toString(),
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black,
-                              ),
-                            );
-                          },
-                        ),
+                        sideTitles: SideTitles(showTitles: false),
                       ),
-
                       rightTitles: AxisTitles(
                         sideTitles: SideTitles(showTitles: false),
                       ),
-
-                      /// LEFT AXIS → EXACT VALUES
                       leftTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
@@ -123,7 +123,6 @@ class DayWiseCentreGraphBarWidget extends StatelessWidget {
                           ),
                         ),
                       ),
-
                       bottomTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
@@ -152,21 +151,26 @@ class DayWiseCentreGraphBarWidget extends StatelessWidget {
                     borderData: FlBorderData(
                       show: true,
                       border: Border(
-                        left: BorderSide(color: Colors.grey.shade400),
-                        bottom: BorderSide(color: Colors.grey.shade400),
+                        left:
+                        BorderSide(color: Colors.grey.shade400),
+                        bottom:
+                        BorderSide(color: Colors.grey.shade400),
                       ),
                     ),
 
                     /// BARS
-                    barGroups: data.centres.asMap().entries.map((e) {
+                    barGroups:
+                    data.centres.asMap().entries.map((e) {
                       return BarChartGroupData(
                         x: e.key,
+                        showingTooltipIndicators: const [0],
                         barRods: [
                           BarChartRodData(
                             toY: e.value.totalCane,
                             width: 26,
                             color: const Color(0xFF9BEAFF),
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius:
+                            BorderRadius.circular(4),
                           ),
                         ],
                       );
@@ -181,7 +185,8 @@ class DayWiseCentreGraphBarWidget extends StatelessWidget {
             /// LEGEND
             Row(
               children: const [
-                Icon(Icons.square, size: 14, color: Color(0xFF9BEAFF)),
+                Icon(Icons.square,
+                    size: 14, color: Color(0xFF9BEAFF)),
                 SizedBox(width: 6),
                 Text(
                   "Cane Weight",
