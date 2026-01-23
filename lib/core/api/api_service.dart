@@ -7,6 +7,7 @@ import '../../models/day_wise_centre_graph_model.dart';
 import '../../models/plant_model.dart';
 import '../../models/login_request.dart';
 import '../../models/login_response.dart';
+import '../../models/variety_day_data.dart';
 import '../constants/api_constants.dart';
 
 class ApiService {
@@ -179,6 +180,32 @@ class ApiService {
       return list
           .map((e) => CentreWiseTotalCaneModel.fromJson(e))
           .toList();
+    } else {
+      throw Exception(jsonData['message']);
+    }
+  }
+
+
+
+  static Future<List<VarietyDayData>> fetchDailyVarietyWise(
+      String plantCode) async {
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "daily_variety_wise_cane_Graph.php"),
+      body: {
+        "plantCode": plantCode,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server error");
+    }
+
+    final jsonData = json.decode(response.body);
+
+    if (jsonData['success'] == 1) {
+      List list = jsonData['data'];
+      return list.map((e) => VarietyDayData.fromJson(e)).toList();
     } else {
       throw Exception(jsonData['message']);
     }
