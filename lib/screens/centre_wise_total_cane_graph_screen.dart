@@ -34,8 +34,7 @@ class _CentreWiseTotalCaneGraphScreenState
 
       if (plantCode.isEmpty) return;
 
-      final data =
-      await ApiService.fetchCentreWiseTotalCane(plantCode);
+      final data = await ApiService.fetchCentreWiseTotalCane(plantCode);
 
       double total = 0;
       for (var e in data) {
@@ -57,13 +56,14 @@ class _CentreWiseTotalCaneGraphScreenState
     final maxY =
     list.isEmpty ? 0 : list.map((e) => e.totalCane).reduce(max);
 
+    /// 🔥 EXTRA WIDTH FOR LAST BAR + VALUE
     final chartWidth = max(
-      list.length * 80.0, // 🔥 per bar width (scroll control)
+      list.length * 90.0 + 40, // <-- right margin fix
       MediaQuery.of(context).size.width,
     );
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: const Color(0xFFF4F6F9),
       appBar: AppBar(
         title: const Text("Centre Wise Total Cane Purchase"),
         centerTitle: true,
@@ -72,10 +72,11 @@ class _CentreWiseTotalCaneGraphScreenState
         padding: const EdgeInsets.all(12),
         child: Card(
           elevation: 6,
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(14, 16, 14, 14),
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : Column(
@@ -91,11 +92,11 @@ class _CentreWiseTotalCaneGraphScreenState
                     child: BarChart(
                       BarChartData(
                         minY: 0,
-                        maxY: maxY * 1.15, // 🔥 TOP SPACE (CUT FIX)
+                        maxY: maxY * 1.2, // 🔥 SAFE TOP SPACE
 
-                        alignment: BarChartAlignment.spaceBetween,
+                        alignment: BarChartAlignment.spaceAround,
 
-                        /// 🔥 VALUE ON TOP (ALWAYS VISIBLE)
+                        /// VALUE JUST ABOVE BAR
                         barTouchData: BarTouchData(
                           enabled: false,
                           touchTooltipData: BarTouchTooltipData(
@@ -105,7 +106,7 @@ class _CentreWiseTotalCaneGraphScreenState
                             getTooltipItem:
                                 (group, groupIndex, rod, rodIndex) {
                               return BarTooltipItem(
-                                rod.toY.toStringAsFixed(2), // EXACT
+                                rod.toY.toStringAsFixed(2),
                                 const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
@@ -126,18 +127,21 @@ class _CentreWiseTotalCaneGraphScreenState
                           leftTitles: AxisTitles(
                             sideTitles: SideTitles(
                               showTitles: true,
-                              reservedSize: 48,
+                              reservedSize: 50,
                               interval: maxY / 5,
                               getTitlesWidget: (value, meta) => Text(
                                 value.toInt().toString(),
-                                style: const TextStyle(fontSize: 10),
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.black54,
+                                ),
                               ),
                             ),
                           ),
                           bottomTitles: AxisTitles(
                             sideTitles: SideTitles(
                               showTitles: true,
-                              reservedSize: 60,
+                              reservedSize: 65,
                               getTitlesWidget: (value, meta) {
                                 final index = value.toInt();
                                 if (index < 0 || index >= list.length) {
@@ -183,34 +187,42 @@ class _CentreWiseTotalCaneGraphScreenState
 
                         barGroups: List.generate(
                           list.length,
-                              (index) {
-                            return BarChartGroupData(
-                              x: index,
-                              showingTooltipIndicators: const [0],
-                              barRods: [
-                                BarChartRodData(
-                                  toY: list[index].totalCane,
-                                  width: 28,
-                                  borderRadius: BorderRadius.circular(6),
-                                  color: const Color(0xFF9BEAFF),
-                                ),
-                              ],
-                            );
-                          },
+                              (index) => BarChartGroupData(
+                            x: index,
+                            showingTooltipIndicators: const [0],
+                            barRods: [
+                              BarChartRodData(
+                                toY: list[index].totalCane,
+                                width: 30,
+                                borderRadius:
+                                BorderRadius.circular(8),
+                                color: const Color(0xFF9BEAFF),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
 
                 /// ================= TOTAL =================
-                Text(
-                  "Total (All Centres) : ${grandTotal.toStringAsFixed(2)}",
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 10, horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    "Total (All Centres) : ${grandTotal.toStringAsFixed(2)}",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
