@@ -11,20 +11,25 @@ class VarietyDayItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final total = item.early + item.general + item.reject;
+    final double total = item.early + item.general + item.reject;
 
-    final earlyPer = total == 0 ? 0 : (item.early * 100) / total;
-    final generalPer = total == 0 ? 0 : (item.general * 100) / total;
-    final rejectPer = total == 0 ? 0 : (item.reject * 100) / total;
+    final double earlyPer =
+    total == 0 ? 0.0 : (item.early * 100.0) / total;
+    final double generalPer =
+    total == 0 ? 0.0 : (item.general * 100.0) / total;
+    final double rejectPer =
+    total == 0 ? 0.0 : (item.reject * 100.0) / total;
+
+    final double maxY = _roundUp(total);
 
     return Card(
-      elevation: 5,
-      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 6,
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -33,7 +38,7 @@ class VarietyDayItem extends StatelessWidget {
             Text(
               item.date,
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -46,72 +51,50 @@ class VarietyDayItem extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
+                color: Colors.black54,
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
 
-            /// GRAPH
-            SizedBox(
-              height: 200,
+            /// GRAPH CONTAINER (Android look)
+            Container(
+              height: 230,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                color: const Color(0xfff4f6f8),
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: BarChart(
                 BarChartData(
                   minY: 0,
-                  maxY: total * 1.3,
-                  alignment: BarChartAlignment.spaceAround,
-
-                  /// 🔥 TOOLTIP (VALUE + %)
-                  barTouchData: BarTouchData(
-                    enabled: true,
-                    handleBuiltInTouches: false,
-                    touchTooltipData: BarTouchTooltipData(
-                      tooltipBgColor: Colors.transparent,
-                      tooltipPadding: EdgeInsets.zero,
-                      tooltipMargin: 6,
-                      getTooltipItem:
-                          (group, groupIndex, rod, rodIndex) {
-                        double? percent = 0;
-
-                        if (group.x == 0) {
-                          percent = earlyPer as double?;
-                        } else if (group.x == 1) {
-                          percent = generalPer as double?;
-                        } else {
-                          percent = rejectPer as double?;
-                        }
-
-                        return BarTooltipItem(
-                          "${rod.toY.toStringAsFixed(2)} (${percent?.toStringAsFixed(2)}%)",
-                          const TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 11,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+                  maxY: maxY,
+                  alignment: BarChartAlignment.spaceEvenly,
+                  barTouchData: BarTouchData(enabled: false),
 
                   titlesData: FlTitlesData(
                     topTitles: const AxisTitles(
                         sideTitles: SideTitles(showTitles: false)),
                     rightTitles: const AxisTitles(
                         sideTitles: SideTitles(showTitles: false)),
+
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        interval: total / 5,
-                        getTitlesWidget: (v, m) => Text(
-                          v.toStringAsFixed(2),
-                          style: const TextStyle(fontSize: 9),
+                        reservedSize: 44,
+                        interval: maxY / 4,
+                        getTitlesWidget: (value, meta) => Text(
+                          value.toStringAsFixed(0),
+                          style: const TextStyle(fontSize: 10),
                         ),
                       ),
                     ),
+
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        getTitlesWidget: (v, m) {
-                          switch (v.toInt()) {
+                        getTitlesWidget: (value, meta) {
+                          switch (value.toInt()) {
                             case 0:
                               return const Text("Early");
                             case 1:
@@ -125,16 +108,38 @@ class VarietyDayItem extends StatelessWidget {
                     ),
                   ),
 
-                  gridData: FlGridData(show: false),
+                  gridData: FlGridData(
+                    show: true,
+                    horizontalInterval: maxY / 4,
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color: Colors.black12,
+                      strokeWidth: 1,
+                    ),
+                  ),
+
                   borderData: FlBorderData(show: false),
 
                   barGroups: [
-                    _bar(0, item.early, Colors.green),
-                    _bar(1, item.general, Colors.blue),
-                    _bar(2, item.reject, Colors.red),
+                    _bar(0, item.early, earlyPer, Colors.green),
+                    _bar(1, item.general, generalPer, Colors.blue),
+                    _bar(2, item.reject, rejectPer, Colors.red),
                   ],
                 ),
               ),
+            ),
+
+            const SizedBox(height: 10),
+
+            /// LEGEND
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                _Legend(color: Colors.green, text: "Early"),
+                SizedBox(width: 14),
+                _Legend(color: Colors.blue, text: "General"),
+                SizedBox(width: 14),
+                _Legend(color: Colors.red, text: "Reject"),
+              ],
             ),
           ],
         ),
@@ -142,16 +147,55 @@ class VarietyDayItem extends StatelessWidget {
     );
   }
 
-  BarChartGroupData _bar(int x, double value, Color color) {
+  /// BAR WITH VALUE + % TEXT
+  BarChartGroupData _bar(
+      int x, double value, double percent, Color color) {
     return BarChartGroupData(
       x: x,
-      showingTooltipIndicators: const [0],
+      barsSpace: 4,
       barRods: [
         BarChartRodData(
           toY: value,
-          width: 28,
-          borderRadius: BorderRadius.circular(6),
+          width: 35,
           color: color,
+          borderRadius: BorderRadius.circular(6),
+          rodStackItems: [],
+        ),
+      ],
+      showingTooltipIndicators: const [],
+    );
+  }
+
+  /// AUTO Y AXIS ROUNDING
+  double _roundUp(double value) {
+    if (value <= 0) return 100;
+    return (value / 1000).ceil() * 1000;
+  }
+}
+
+/// LEGEND WIDGET
+class _Legend extends StatelessWidget {
+  final Color color;
+  final String text;
+
+  const _Legend({required this.color, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          text,
+          style: const TextStyle(fontSize: 11),
         ),
       ],
     );
