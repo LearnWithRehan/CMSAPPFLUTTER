@@ -1,3 +1,4 @@
+import 'package:canemanagementsystem/screens/centre_wise_total_cane_graph_screen.dart';
 import 'package:flutter/material.dart';
 import 'cane_trend_graph_screen.dart';
 import 'centre_wise_cane_trend_screen.dart';
@@ -59,7 +60,12 @@ class GraphDesign_Screen extends StatelessWidget {
               iconColor: Colors.blue,
               borderColor: Colors.blue,
               onTap: () {
-                // next screen later
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const CentreWiseTotalCaneGraphScreen(),
+                  ),
+                );
               },
             ),
 

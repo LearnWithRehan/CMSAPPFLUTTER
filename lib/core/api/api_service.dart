@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../models/cane_day_data.dart';
+import '../../models/centre_wise_total_cane_model.dart';
 import '../../models/day_wise_centre_graph_model.dart';
 import '../../models/plant_model.dart';
 import '../../models/login_request.dart';
@@ -150,6 +151,39 @@ class ApiService {
       throw Exception(jsonData['message']);
     }
   }
+
+
+  /* =========================
+   📊 CENTRE WISE TOTAL CANE
+   ========================= */
+  static Future<List<CentreWiseTotalCaneModel>>
+  fetchCentreWiseTotalCane(String plantCode) async {
+
+    final url = Uri.parse(
+      ApiConstants.baseUrl + "centre_wise_total_cane_graph.php",
+    );
+
+    final response = await http.post(
+      url,
+      body: {"plantCode": plantCode},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+
+    if (jsonData['success'] == 1) {
+      List list = jsonData['data'];
+      return list
+          .map((e) => CentreWiseTotalCaneModel.fromJson(e))
+          .toList();
+    } else {
+      throw Exception(jsonData['message']);
+    }
+  }
+
 
 
 
