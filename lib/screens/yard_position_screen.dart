@@ -32,6 +32,12 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
   String truckTodayQty = "0";
 
 
+  String cnttruckInYard = "0";
+  String cnttruckInDonga = "0";
+  String cnttruckPurNo = "0";
+  String cnttruckTodayQty = "0";
+
+
   @override
   void initState() {
     super.initState();
@@ -55,8 +61,79 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
     loadTruckCountDonga();
     loadTruckPurchyNo();
     loadTruckPurchyQty();
+    loadCntTruckCount();
+    loadTruckCountGross();
+    loadCntTruckPurchyNo();
+    loadCntTruckPurchyQty();
 
   }
+
+
+  Future<void> loadCntTruckPurchyQty() async {
+    try {
+      if (selectedDate.isEmpty) return;
+
+      final res = await ApiService.getCntTruckCountPurchyNoQty(selectedDate);
+
+      if (res.success == 1) {
+        setState(() {
+          cnttruckTodayQty = res.total.toStringAsFixed(2);
+        });
+      }
+    } catch (e) {
+      debugPrint("Truck Purchy Qty Error: $e");
+    }
+  }
+
+
+
+  Future<void> loadCntTruckPurchyNo() async {
+    try {
+      if (selectedDate.isEmpty) return;
+
+      final res = await ApiService.getCntTruckCountPurchyNo(selectedDate);
+
+      if (res.success == 1) {
+        setState(() {
+          cnttruckPurNo = res.total.toString();
+        });
+      }
+    } catch (e) {
+      debugPrint("Truck Purchy No Error: $e");
+    }
+  }
+
+
+  Future<void> loadTruckCountGross() async {
+    try {
+      final res = await ApiService.getTruckCountGross();
+
+      if (res.success == 1) {
+        setState(() {
+          cnttruckInDonga = res.total.toString();
+        });
+      }
+    } catch (e) {
+      debugPrint("Truck Gross Count Error: $e");
+    }
+  }
+
+
+  Future<void> loadCntTruckCount() async {
+    try {
+      final res = await ApiService.getCntTruckCount();
+
+      if (res.success == 1) {
+        setState(() {
+          cnttruckInYard = res.total.toString();  // use it wherever needed
+        });
+      }
+    } catch (e) {
+      debugPrint("Cnt Truck Count Error: $e");
+    }
+  }
+
+
 
   Future<void> loadTruckPurchyQty() async {
     try {
@@ -405,10 +482,10 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
 
             row([
               "Truck",
-              "0",
-              "0",
-              "0",
-              "0.0",
+              cnttruckInYard,   // 👈 API VALUE
+              cnttruckInDonga,
+              cnttruckPurNo,
+              cnttruckTodayQty,
             ]),
 
             titleLine("==================================="),

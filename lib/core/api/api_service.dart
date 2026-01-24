@@ -2,6 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../models/CntTruckCountInDongaResponse.dart';
+import '../../models/CntTruckCountInGrossResponse.dart';
+import '../../models/CntTruckCountInYardResponsePurchyNo.dart';
+import '../../models/CntTruckCountInYardResponsePurchyNoQty.dart';
 import '../../models/TruckCountInYardResponsePurchyNo.dart';
 import '../../models/TruckCountInYardResponsePurchyNoQty.dart';
 import '../../models/cane_day_data.dart';
@@ -569,6 +573,121 @@ class ApiService {
 
     final jsonData = json.decode(response.body);
     return TruckCountInYardResponsePurchyNoQty.fromJson(jsonData);
+  }
+
+
+  /// ================= TRUCK COUNT IN YARD =================
+  static Future<CntTruckCountInDongaResponse> getCntTruckCount() async {
+    final sp = await SharedPreferences.getInstance();
+    final plantCode = sp.getString("PLANT_CODE");
+
+    if (plantCode == null) {
+      throw Exception("Plant code not found");
+    }
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "CountInYardCnt.php"),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+    return CntTruckCountInDongaResponse.fromJson(jsonData);
+  }
+
+
+  /// ================= TRUCK GROSS COUNT =================
+  static Future<CntTruckCountInGrossResponse> getTruckCountGross() async {
+    final sp = await SharedPreferences.getInstance();
+    final plantCode = sp.getString("PLANT_CODE");
+
+    if (plantCode == null) {
+      throw Exception("Plant code not found");
+    }
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "CountInGrossCnt.php"),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+    return CntTruckCountInGrossResponse.fromJson(jsonData);
+  }
+
+
+  /// ================= TRUCK PURCHASE NO (DATE WISE) =================
+  static Future<CntTruckCountInYardResponsePurchyNo> getCntTruckCountPurchyNo(String selectedDate) async {
+    final sp = await SharedPreferences.getInstance();
+    final plantCode = sp.getString("PLANT_CODE");
+
+    if (plantCode == null) {
+      throw Exception("Plant code not found");
+    }
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "CountInCntTruckPurchy.php"),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+        "selectedDate": selectedDate, // dd-MM-yyyy
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error: ${response.statusCode}");
+    }
+
+    final jsonData = json.decode(response.body);
+    return CntTruckCountInYardResponsePurchyNo.fromJson(jsonData);
+  }
+
+
+
+  /// ================= TRUCK PURCHASE QTY (DATE WISE) =================
+  static Future<CntTruckCountInYardResponsePurchyNoQty> getCntTruckCountPurchyNoQty(String selectedDate) async {
+    final sp = await SharedPreferences.getInstance();
+    final plantCode = sp.getString("PLANT_CODE");
+
+    if (plantCode == null) {
+      throw Exception("Plant code not found");
+    }
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "CountInCntTruckPurchyQty.php"),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+        "selectedDate": selectedDate, // dd-MM-yyyy
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error: ${response.statusCode}");
+    }
+
+    final jsonData = json.decode(response.body);
+    return CntTruckCountInYardResponsePurchyNoQty.fromJson(jsonData);
   }
 
 
