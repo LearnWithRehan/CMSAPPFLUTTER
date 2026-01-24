@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/cane_day_data.dart';
 import '../../models/cart_count_donga_response.dart';
+import '../../models/cart_count_purchy_qty_response.dart';
 import '../../models/cart_count_purchy_response.dart';
 import '../../models/cart_count_response.dart';
 import '../../models/centre_wise_total_cane_model.dart';
@@ -15,6 +16,7 @@ import '../../models/variety_day_data.dart';
 import '../constants/api_constants.dart';
 
 class ApiService {
+
 
   /* =========================
      🌱 PLANT MASTER API
@@ -292,6 +294,34 @@ class ApiService {
     final jsonData = json.decode(response.body);
     return CartCountPurchyResponse.fromJson(jsonData);
   }
+
+
+  /// ================= CART PURCHASE QTY =================
+  static Future<CartCountInYardResponsePurchyNoQty>
+  getCartPurchyQty(String selectedDate) async {
+
+    final sp = await SharedPreferences.getInstance();
+    final plantCode = sp.getString("PLANT_CODE");
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "CountInCartPurchyQty.php"),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode ?? "",
+        "selectedDate": selectedDate, // dd-MM-yyyy
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+    return CartCountInYardResponsePurchyNoQty.fromJson(jsonData);
+  }
+
 
 
 }

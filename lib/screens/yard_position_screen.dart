@@ -19,7 +19,7 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
   String cartInYard = "0";
   String cartInDonga = "0";
   String cartPurNo = "0";
-  String cartTodayQty = "00.00";
+  String cartPurQty  = "00.00";
 
   String trolleyInYard = "0";
   String truckInYard = "0";
@@ -38,6 +38,7 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
     loadCartCount();
     loadCartCountDonga();
     loadCartPurchyNo();
+    loadCartPurchyQty();
   }
 
 
@@ -110,6 +111,25 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
       debugPrint("Cart Purchy No Error: $e");
     }
   }
+
+
+  Future<void> loadCartPurchyQty() async {
+    try {
+      if (selectedDate.isEmpty) return;
+
+      final res =
+      await ApiService.getCartPurchyQty(selectedDate);
+
+      if (res.success == 1) {
+        setState(() {
+          cartPurQty = res.total.toStringAsFixed(2);
+        });
+      }
+    } catch (e) {
+      debugPrint("Cart Purchy Qty Error: $e");
+    }
+  }
+
 
 
 
@@ -205,7 +225,7 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
               cartInYard,      // 👈 API VALUE HERE
               cartInDonga,
               cartPurNo,
-              cartTodayQty,
+              cartPurQty,
             ]),
 
             row([
