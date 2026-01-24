@@ -22,7 +22,15 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
   String cartPurQty  = "00.00";
 
   String trolleyInYard = "0";
+  String trolleyInDonga = "0";
+  String trolleyPurNo = "0";
+  String trolleyTodayQty = "0.00";
+
   String truckInYard = "0";
+  String truckInDonga = "0";
+  String truckPurNo = "0";
+  String truckTodayQty = "0";
+
 
   @override
   void initState() {
@@ -39,7 +47,154 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
     loadCartCountDonga();
     loadCartPurchyNo();
     loadCartPurchyQty();
+    loadTrolleyCount();
+    loadTrolleyCountDonga();
+    loadTrolleyPurchyNo();
+    loadTrolleyPurchyQty();
+    loadTruckCount();
+    loadTruckCountDonga();
+    loadTruckPurchyNo();
+    loadTruckPurchyQty();
+
   }
+
+  Future<void> loadTruckPurchyQty() async {
+    try {
+      if (selectedDate.isEmpty) return;
+
+      final res =
+      await ApiService.getTruckCountPurchyNoQty(selectedDate);
+
+      if (res.success == 1) {
+        setState(() {
+          truckTodayQty = res.total.toStringAsFixed(2);
+        });
+      }
+    } catch (e) {
+      debugPrint("Truck Purchy Qty Error: $e");
+    }
+  }
+
+
+  Future<void> loadTruckPurchyNo() async {
+    try {
+      if (selectedDate.isEmpty) return;
+
+      final res =
+      await ApiService.getTruckCountPurchyNo(selectedDate);
+
+      if (res.success == 1) {
+        setState(() {
+          truckPurNo = res.total.toString();
+        });
+      }
+    } catch (e) {
+      debugPrint("Truck Purchy No Error: $e");
+    }
+  }
+
+
+  Future<void> loadTruckCountDonga() async {
+    try {
+      final res = await ApiService.getTruckCountDonga();
+
+      if (res.success == 1) {
+        setState(() {
+          truckInDonga = res.total.toString();
+        });
+      }
+    } catch (e) {
+      debugPrint("Truck In Donga Error: $e");
+    }
+  }
+
+
+
+  Future<void> loadTruckCount() async {
+    try {
+      final res = await ApiService.getTruckCount();
+
+      if (res.success == 1) {
+        setState(() {
+          truckInYard = res.total.toString();
+        });
+      }
+    } catch (e) {
+      debugPrint("Truck In Yard Error: $e");
+    }
+  }
+
+
+
+  Future<void> loadTrolleyPurchyQty() async {
+    try {
+      if (selectedDate.isEmpty) return;
+
+      final res =
+      await ApiService.getTrolleyPurchyQty(selectedDate);
+
+      if (res.success == 1) {
+        setState(() {
+          trolleyTodayQty =
+              res.total.toStringAsFixed(2);
+        });
+      }
+    } catch (e) {
+      debugPrint("Trolley Purchy Qty Error: $e");
+    }
+  }
+
+
+
+  Future<void> loadTrolleyPurchyNo() async {
+    try {
+      if (selectedDate.isEmpty) return;
+
+      final res =
+      await ApiService.getTrolleyPurchyNo(selectedDate);
+
+      if (res.success == 1) {
+        setState(() {
+          trolleyPurNo = res.total.toString();
+        });
+      }
+    } catch (e) {
+      debugPrint("Trolley Purchy No Error: $e");
+    }
+  }
+
+
+
+
+  Future<void> loadTrolleyCountDonga() async {
+    try {
+      final res = await ApiService.getTrolleyCountDonga();
+
+      if (res.success == 1) {
+        setState(() {
+          trolleyInDonga = res.total.toString();
+        });
+      }
+    } catch (e) {
+      debugPrint("Trolley Donga Error: $e");
+    }
+  }
+
+
+  Future<void> loadTrolleyCount() async {
+    try {
+      final res = await ApiService.getTrolleyCount();
+
+      if (res.success == 1) {
+        setState(() {
+          trolleyInYard = res.total.toString();
+        });
+      }
+    } catch (e) {
+      debugPrint("Trolley Count Error: $e");
+    }
+  }
+
 
 
   /// ================= LOAD PREF + PLANT =================
@@ -231,18 +386,19 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
             row([
               "Trolley",
               trolleyInYard,
-              "0",
-              "0",
-              "00.00",
+              trolleyInDonga,
+              trolleyPurNo,
+              trolleyTodayQty,
             ]),
 
             row([
               "Truck",
-              truckInYard,
-              "0",
-              "0",
-              "00.00",
+              truckInYard,   // 👈 API VALUE
+              truckInDonga,
+              truckPurNo,
+              truckTodayQty,
             ]),
+
 
             /// ================= CENTRE =================
             titleLine("------- CENTRE RECEIPT -------"),

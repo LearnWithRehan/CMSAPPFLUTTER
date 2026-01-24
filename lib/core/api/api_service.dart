@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../models/TruckCountInYardResponsePurchyNo.dart';
+import '../../models/TruckCountInYardResponsePurchyNoQty.dart';
 import '../../models/cane_day_data.dart';
 import '../../models/cart_count_donga_response.dart';
 import '../../models/cart_count_purchy_qty_response.dart';
@@ -12,6 +14,12 @@ import '../../models/day_wise_centre_graph_model.dart';
 import '../../models/plant_model.dart';
 import '../../models/login_request.dart';
 import '../../models/login_response.dart';
+import '../../models/trolley_count_in_donga_response.dart';
+import '../../models/trolley_count_in_yard_response.dart';
+import '../../models/trolley_count_purchy_qty_response.dart';
+import '../../models/trolley_count_purchy_response.dart';
+import '../../models/truck_count_donga_response.dart';
+import '../../models/truck_count_in_yard_response.dart';
 import '../../models/variety_day_data.dart';
 import '../constants/api_constants.dart';
 
@@ -321,6 +329,249 @@ class ApiService {
     final jsonData = json.decode(response.body);
     return CartCountInYardResponsePurchyNoQty.fromJson(jsonData);
   }
+
+
+  /// ================= TROLLEY IN YARD =================
+  static Future<TrolleyCountInYardResponse> getTrolleyCount() async {
+    final sp = await SharedPreferences.getInstance();
+    final plantCode = sp.getString("PLANT_CODE");
+
+    if (plantCode == null) {
+      throw Exception("Plant code not found");
+    }
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "CountInYardTrolley.php"),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+    return TrolleyCountInYardResponse.fromJson(jsonData);
+  }
+
+
+
+  /// ================= TROLLEY IN DONGA =================
+  static Future<TrolleyCountInDongaResponse> getTrolleyCountDonga() async {
+    final sp = await SharedPreferences.getInstance();
+    final plantCode = sp.getString("PLANT_CODE");
+
+    if (plantCode == null) {
+      throw Exception("Plant code not found");
+    }
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "CountInDongaTrolley.php"),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+    return TrolleyCountInDongaResponse.fromJson(jsonData);
+  }
+
+
+  /// ================= TROLLEY PURCHASE NO =================
+  static Future<TrolleyCountPurchyResponse> getTrolleyPurchyNo(
+      String selectedDate) async {
+
+    final sp = await SharedPreferences.getInstance();
+    final plantCode = sp.getString("PLANT_CODE");
+
+    if (plantCode == null) {
+      throw Exception("Plant code not found");
+    }
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "CountInTrolleyPurchy.php"),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+        "selectedDate": selectedDate, // dd-MM-yyyy
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+    return TrolleyCountPurchyResponse.fromJson(jsonData);
+  }
+
+
+
+  /// ================= TROLLEY PURCHASE QTY =================
+  static Future<TrolleyCountPurchyQtyResponse>
+  getTrolleyPurchyQty(String selectedDate) async {
+
+    final sp = await SharedPreferences.getInstance();
+    final plantCode = sp.getString("PLANT_CODE");
+
+    if (plantCode == null) {
+      throw Exception("Plant code not found");
+    }
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "CountInTrolyPurchyQty.php"),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+        "selectedDate": selectedDate, // dd-MM-yyyy
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+    return TrolleyCountPurchyQtyResponse.fromJson(jsonData);
+  }
+
+
+
+  /// ================= TRUCK IN YARD =================
+  static Future<TruckCountInYardResponse> getTruckCount() async {
+    final sp = await SharedPreferences.getInstance();
+    final plantCode = sp.getString("PLANT_CODE");
+
+    if (plantCode == null) {
+      throw Exception("Plant code not found");
+    }
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "CountInYardTruck.php"),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+    return TruckCountInYardResponse.fromJson(jsonData);
+  }
+
+
+
+  /// ================= TRUCK IN DONGA =================
+  static Future<TruckCountInDongaResponse> getTruckCountDonga() async {
+    final sp = await SharedPreferences.getInstance();
+    final plantCode = sp.getString("PLANT_CODE");
+
+    if (plantCode == null) {
+      throw Exception("Plant code not found");
+    }
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "CountInDongaTruck.php"),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+    return TruckCountInDongaResponse.fromJson(jsonData);
+  }
+
+
+
+  /// ================= TRUCK PURCHY NO =================
+  static Future<TruckCountInYardResponsePurchyNo>
+  getTruckCountPurchyNo(String selectedDate) async {
+
+    final sp = await SharedPreferences.getInstance();
+    final plantCode = sp.getString("PLANT_CODE");
+
+    if (plantCode == null) {
+      throw Exception("Plant code not found");
+    }
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "CountInTruckPurchy.php"),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+        "selectedDate": selectedDate, // dd-MM-yyyy
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+    return TruckCountInYardResponsePurchyNo.fromJson(jsonData);
+  }
+
+
+  /// ================= TRUCK PURCHY QTY =================
+  static Future<TruckCountInYardResponsePurchyNoQty>
+  getTruckCountPurchyNoQty(String selectedDate) async {
+
+    final sp = await SharedPreferences.getInstance();
+    final plantCode = sp.getString("PLANT_CODE");
+
+    if (plantCode == null) {
+      throw Exception("Plant code not found");
+    }
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "CountInTruckPurchyQty.php"),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+        "selectedDate": selectedDate, // dd-MM-yyyy
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+    return TruckCountInYardResponsePurchyNoQty.fromJson(jsonData);
+  }
+
+
 
 
 
