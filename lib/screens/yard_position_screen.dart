@@ -1,15 +1,51 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class YardPositionScreen extends StatelessWidget {
+import '../core/api/api_service.dart';
+
+class YardPositionScreen extends StatefulWidget {
   const YardPositionScreen({super.key});
 
-  Widget cell(String text,
-      {bool bold = false, TextAlign align = TextAlign.center}) {
+  @override
+  State<YardPositionScreen> createState() => _YardPositionScreenState();
+}
+
+class _YardPositionScreenState extends State<YardPositionScreen> {
+  String selectedDate = "";
+  String plantName = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSelectedDate();
+    loadData();
+  }
+
+  /// ================= LOAD PREF + API =================
+  Future<void> loadData() async {
+    final sp = await SharedPreferences.getInstance();
+
+
+    final plantCode = sp.getString("PLANT_CODE");
+    if (plantCode != null) {
+      plantName = await ApiService.fetchPlantNameByCode(plantCode);
+    }
+
+    setState(() {});
+  }
+
+
+  Future<void> _loadSelectedDate() async {
+    final prefs = await SharedPreferences.getInstance();
+    selectedDate = prefs.getString("SELECTED_DATE") ?? "";
+    setState(() {});
+  }
+
+  Widget cell(String text, {bool bold = false}) {
     return Expanded(
       child: Text(
         text,
-        textAlign: align,
+        textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 14,
           fontWeight: bold ? FontWeight.bold : FontWeight.normal,
@@ -22,9 +58,7 @@ class YardPositionScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
-        children: values
-            .map((e) => cell(e, bold: bold))
-            .toList(),
+        children: values.map((e) => cell(e, bold: bold)).toList(),
       ),
     );
   }
@@ -35,10 +69,7 @@ class YardPositionScreen extends StatelessWidget {
       child: Center(
         child: Text(
           text,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -46,86 +77,67 @@ class YardPositionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final date = DateFormat("dd-MM-yyyy").format(DateTime.now());
-
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text("Yard Position"),
         centerTitle: true,
-        elevation: 0,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
-            /// COMPANY NAME
-            const Center(
+            Center(
               child: Text(
-                "BHAGESHWOR SUGAR & CHEMICAL\nINDUSTRIES PVT. LTD.",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                plantName.isEmpty
+                    ? "Cane Management System"
+                    : plantName,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
 
             const SizedBox(height: 12),
 
-            /// DATE
+            /// ✅ SELECTED DATE HERE
             Row(
               children: [
                 const Expanded(
-                  child: Text(
-                    "Yard Position as on Date/Time:",
-                    style: TextStyle(fontSize: 14),
-                  ),
+                  child: Text("Yard Position as on Date:"),
                 ),
                 Text(
-                  date,
-                  style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.bold),
+                  selectedDate,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
 
-            const SizedBox(height: 6),
+            const Divider(),
 
-
-            const Divider(thickness: 1, height: 20),
-
-            /// HEADER ROW
             row(
               ["Supply", "InYard", "InDonga", "Pur No", "TodayPur(Qty)"],
               bold: true,
             ),
 
-            /// AT GATE
             titleLine("----------- AT GATE -----------"),
+            row(["Cart", "0", "0", "0", "00.00"]),
+            row(["Trolley", "0", "0", "0", "00.00"]),
+            row(["Truck", "0", "0", "0", "00.00"]),
 
-            row(["Cart", "5", "2", "20", "357.16"]),
-            row(["Trolley", "114", "17", "68", "5666.48"]),
-            row(["Truck", "0", "0", "2", "202.52"]),
-
-            /// CENTRE RECEIPT
             titleLine("------- CENTRE RECEIPT -------"),
-
             row(["Truck", "0", "0", "0", "0.0"]),
 
-            /// SEPARATOR
-            titleLine("==========================================="),
-
-            /// TOTAL
-            row(["Total", "119", "19", "90", "6226.16"], bold: true),
-
-            titleLine("==========================================="),
+            titleLine("==================================="),
+            row(["Total", "00", "00", "00", "00.00"], bold: true),
+            titleLine("==================================="),
 
             const SizedBox(height: 10),
-
-            /// TODATE PURCHASE
             const Text(
-              "Todate Purchase : 817367.26",
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              "Todate Purchase : 00.00",
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ],
         ),
