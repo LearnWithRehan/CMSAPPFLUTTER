@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/cane_day_data.dart';
+import '../../models/cart_count_donga_response.dart';
+import '../../models/cart_count_purchy_response.dart';
 import '../../models/cart_count_response.dart';
 import '../../models/centre_wise_total_cane_model.dart';
 import '../../models/day_wise_centre_graph_model.dart';
@@ -246,6 +248,50 @@ class ApiService {
   }
 
 
+
+  /// ================= CART IN DONGA =================
+  static Future<CartCountDongaResponse> getCartCountDonga() async {
+    final sp = await SharedPreferences.getInstance();
+    final plantCode = sp.getString("PLANT_CODE");
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "CountInDongaCart.php"),
+      body: {
+        "plantCode": plantCode ?? "",
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+    return CartCountDongaResponse.fromJson(jsonData);
+  }
+
+
+  /// ================= CART PURCHASE NO =================
+  static Future<CartCountPurchyResponse> getCartPurchyNo(
+      String selectedDate) async {
+
+    final sp = await SharedPreferences.getInstance();
+    final plantCode = sp.getString("PLANT_CODE");
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "CountInCartPurchy.php"),
+      body: {
+        "plantCode": plantCode ?? "",
+        "selectedDate": selectedDate, // dd-MM-yyyy
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+    return CartCountPurchyResponse.fromJson(jsonData);
+  }
 
 
 }

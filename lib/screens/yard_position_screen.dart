@@ -27,10 +27,19 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
   @override
   void initState() {
     super.initState();
-    _loadSelectedDate();
-    loadData();
-    loadCartCount(); // ✅ Cart API call
+    _initAll();
   }
+
+  Future<void> _initAll() async {
+    await _loadSelectedDate();   // ⏳ wait here
+    await loadData();
+
+    // 🔥 now date is available
+    loadCartCount();
+    loadCartCountDonga();
+    loadCartPurchyNo();
+  }
+
 
   /// ================= LOAD PREF + PLANT =================
   Future<void> loadData() async {
@@ -66,6 +75,43 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
       debugPrint("Cart API Error: $e");
     }
   }
+
+
+  Future<void> loadCartCountDonga() async {
+    try {
+      final res = await ApiService.getCartCountDonga();
+
+      if (res.success == 1) {
+        setState(() {
+          // ✅ index = 2 (InDonga)
+          cartInDonga = res.total.toString();
+        });
+      }
+    } catch (e) {
+      debugPrint("Cart InDonga Error: $e");
+    }
+  }
+
+
+  Future<void> loadCartPurchyNo() async {
+    try {
+      if (selectedDate.isEmpty) return;
+
+      final res =
+      await ApiService.getCartPurchyNo(selectedDate);
+
+      if (res.success == 1) {
+        setState(() {
+          // ✅ index = 3
+          cartPurNo = res.total.toString();
+        });
+      }
+    } catch (e) {
+      debugPrint("Cart Purchy No Error: $e");
+    }
+  }
+
+
 
   /// ================= UI HELPERS =================
   Widget cell(String text, {bool bold = false}) {
