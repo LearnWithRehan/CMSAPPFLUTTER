@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/api/api_service.dart';
+import '../models/cart_count_response.dart';
 
 class YardPositionScreen extends StatefulWidget {
   const YardPositionScreen({super.key});
@@ -14,19 +15,28 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
   String selectedDate = "";
   String plantName = "";
 
+  /// ================= AT GATE VALUES =================
+  String cartInYard = "0";
+  String cartInDonga = "0";
+  String cartPurNo = "0";
+  String cartTodayQty = "00.00";
+
+  String trolleyInYard = "0";
+  String truckInYard = "0";
+
   @override
   void initState() {
     super.initState();
     _loadSelectedDate();
     loadData();
+    loadCartCount(); // ✅ Cart API call
   }
 
-  /// ================= LOAD PREF + API =================
+  /// ================= LOAD PREF + PLANT =================
   Future<void> loadData() async {
     final sp = await SharedPreferences.getInstance();
-
-
     final plantCode = sp.getString("PLANT_CODE");
+
     if (plantCode != null) {
       plantName = await ApiService.fetchPlantNameByCode(plantCode);
     }
@@ -34,13 +44,30 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
     setState(() {});
   }
 
-
+  /// ================= LOAD DATE =================
   Future<void> _loadSelectedDate() async {
     final prefs = await SharedPreferences.getInstance();
     selectedDate = prefs.getString("SELECTED_DATE") ?? "";
     setState(() {});
   }
 
+  /// ================= CART COUNT API =================
+  Future<void> loadCartCount() async {
+    try {
+      CartCountResponse res = await ApiService.getCartCount();
+
+      if (res.success == 1) {
+        setState(() {
+          // ✅ index = 1 (InYard)
+          cartInYard = res.total.toString();
+        });
+      }
+    } catch (e) {
+      debugPrint("Cart API Error: $e");
+    }
+  }
+
+  /// ================= UI HELPERS =================
   Widget cell(String text, {bool bold = false}) {
     return Expanded(
       child: Text(
@@ -75,6 +102,7 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
     );
   }
 
+  /// ================= UI =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,13 +115,13 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            /// PLANT NAME
             Center(
               child: Text(
                 plantName.isEmpty
                     ? "Cane Management System"
                     : plantName,
                 style: const TextStyle(
-                  color: Colors.black,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
@@ -102,7 +130,7 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
 
             const SizedBox(height: 12),
 
-            /// ✅ SELECTED DATE HERE
+            /// DATE
             Row(
               children: [
                 const Expanded(
@@ -117,24 +145,56 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
 
             const Divider(),
 
+            /// HEADER
             row(
               ["Supply", "InYard", "InDonga", "Pur No", "TodayPur(Qty)"],
               bold: true,
             ),
 
+            /// ================= AT GATE =================
             titleLine("----------- AT GATE -----------"),
-            row(["Cart", "0", "0", "0", "00.00"]),
-            row(["Trolley", "0", "0", "0", "00.00"]),
-            row(["Truck", "0", "0", "0", "00.00"]),
 
+            row([
+              "Cart",
+              cartInYard,      // 👈 API VALUE HERE
+              cartInDonga,
+              cartPurNo,
+              cartTodayQty,
+            ]),
+
+            row([
+              "Trolley",
+              trolleyInYard,
+              "0",
+              "0",
+              "00.00",
+            ]),
+
+            row([
+              "Truck",
+              truckInYard,
+              "0",
+              "0",
+              "00.00",
+            ]),
+
+            /// ================= CENTRE =================
             titleLine("------- CENTRE RECEIPT -------"),
-            row(["Truck", "0", "0", "0", "0.0"]),
+
+            row([
+              "Truck",
+              "0",
+              "0",
+              "0",
+              "0.0",
+            ]),
 
             titleLine("==================================="),
             row(["Total", "00", "00", "00", "00.00"], bold: true),
             titleLine("==================================="),
 
             const SizedBox(height: 10),
+
             const Text(
               "Todate Purchase : 00.00",
               style: TextStyle(fontWeight: FontWeight.bold),

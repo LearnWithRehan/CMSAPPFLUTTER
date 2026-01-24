@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/cane_day_data.dart';
+import '../../models/cart_count_response.dart';
 import '../../models/centre_wise_total_cane_model.dart';
 import '../../models/day_wise_centre_graph_model.dart';
 import '../../models/plant_model.dart';
@@ -211,6 +213,37 @@ class ApiService {
     }
   }
 
+
+  // ✅ CountCart API (exact Java equivalent)
+  static Future<CartCountResponse> getCartCount() async {
+    final sp = await SharedPreferences.getInstance();
+    final plantCode = sp.getString("PLANT_CODE");
+
+    if (plantCode == null) {
+      throw Exception("Plant code not found");
+    }
+
+    final url = Uri.parse(
+      ApiConstants.baseUrl + "CountInYardCart.php",
+    );
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server error");
+    }
+
+    final jsonData = json.decode(response.body);
+    return CartCountResponse.fromJson(jsonData);
+  }
 
 
 
