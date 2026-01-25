@@ -16,273 +16,262 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
   String plantName = "";
 
   /// ================= AT GATE VALUES =================
-  String cartInYard = "0";
-  String cartInDonga = "0";
-  String cartPurNo = "0";
-  String cartPurQty  = "00.00";
+  int cartInYard = 0;
+  int cartInDonga = 0;
+  int cartPurNo = 0;
+  double cartPurQty = 0.0;
 
-  String trolleyInYard = "0";
-  String trolleyInDonga = "0";
-  String trolleyPurNo = "0";
-  String trolleyTodayQty = "0.00";
+  int trolleyInYard = 0;
+  int trolleyInDonga = 0;
+  int trolleyPurNo = 0;
+  double trolleyTodayQty = 0.0;
 
-  String truckInYard = "0";
-  String truckInDonga = "0";
-  String truckPurNo = "0";
-  String truckTodayQty = "0";
+  int truckInYard = 0;
+  int truckInDonga = 0;
+  int truckPurNo = 0;
+  double truckTodayQty = 0.0;
+
+  double grandTotalPurchase = 0.0;
 
 
-  String cnttruckInYard = "0";
-  String cnttruckInDonga = "0";
-  String cnttruckPurNo = "0";
-  String cnttruckTodayQty = "0";
+  /// ================= CENTRE RECEIPT VALUES =================
+  int cnttruckInYard = 0;
+  int cnttruckInDonga = 0;
+  int cnttruckPurNo = 0;
+  double cnttruckTodayQty = 0.0;
+
+  /// ================= TOTALS =================
+  int totalInYard = 0;
+  int totalInDonga = 0;
+  int totalPurNo = 0;
+  double totalTodayQty = 0.0;
+
+  double grandTotal = 0;
+  bool isLoading = true;
+
 
 
   @override
   void initState() {
     super.initState();
+    isLoading = false;
     _initAll();
   }
 
   Future<void> _initAll() async {
-    await _loadSelectedDate();   // ⏳ wait here
-    await loadData();
+    await _loadSelectedDate(); // load selected date
+    await loadData(); // load plant name
 
-    // 🔥 now date is available
-    loadCartCount();
-    loadCartCountDonga();
-    loadCartPurchyNo();
-    loadCartPurchyQty();
-    loadTrolleyCount();
-    loadTrolleyCountDonga();
-    loadTrolleyPurchyNo();
-    loadTrolleyPurchyQty();
-    loadTruckCount();
-    loadTruckCountDonga();
-    loadTruckPurchyNo();
-    loadTruckPurchyQty();
-    loadCntTruckCount();
-    loadTruckCountGross();
-    loadCntTruckPurchyNo();
-    loadCntTruckPurchyQty();
+    // load all API data
+    await loadCartCount();
+    await loadCartCountDonga();
+    await loadCartPurchyNo();
+    await loadCartPurchyQty();
+    await loadTrolleyCount();
+    await loadTrolleyCountDonga();
+    await loadTrolleyPurchyNo();
+    await loadTrolleyPurchyQty();
+    await loadTruckCount();
+    await loadTruckCountDonga();
+    await loadTruckPurchyNo();
+    await loadTruckPurchyQty();
+    await loadCntTruckCount();
+    await loadTruckCountGross();
+    await loadCntTruckPurchyNo();
+    await loadCntTruckPurchyQty();
+    await loadGrandTotalPurchase();
 
+
+    _calculateTotals();
+  }
+
+  /// ================= CALCULATE TOTALS =================
+  void _calculateTotals() {
+    totalInYard = cartInYard + trolleyInYard + truckInYard + cnttruckInYard;
+    totalInDonga = cartInDonga + trolleyInDonga + truckInDonga + cnttruckInDonga;
+    totalPurNo = cartPurNo + trolleyPurNo + truckPurNo + cnttruckPurNo;
+    totalTodayQty = cartPurQty + trolleyTodayQty + truckTodayQty + cnttruckTodayQty;
+
+    setState(() {});
   }
 
 
-  Future<void> loadCntTruckPurchyQty() async {
+  Future<void> loadGrandTotalPurchase() async {
     try {
       if (selectedDate.isEmpty) return;
 
-      final res = await ApiService.getCntTruckCountPurchyNoQty(selectedDate);
+      final res = await ApiService.getGrandTotal(selectedDate);
 
       if (res.success == 1) {
         setState(() {
-          cnttruckTodayQty = res.total.toStringAsFixed(2);
+          grandTotalPurchase = res.grandTotal;
         });
       }
     } catch (e) {
-      debugPrint("Truck Purchy Qty Error: $e");
+      debugPrint("Grand Total Error: $e");
     }
   }
 
 
 
-  Future<void> loadCntTruckPurchyNo() async {
+  /// ================= API LOADERS =================
+  Future<void> loadCartCount() async {
+    try {
+      final res = await ApiService.getCartCount();
+      if (res.success == 1) cartInYard = res.total;
+    } catch (e) {
+      debugPrint("Cart API Error: $e");
+    }
+  }
+
+  Future<void> loadCartCountDonga() async {
+    try {
+      final res = await ApiService.getCartCountDonga();
+      if (res.success == 1) cartInDonga = res.total;
+    } catch (e) {
+      debugPrint("Cart InDonga Error: $e");
+    }
+  }
+
+  Future<void> loadCartPurchyNo() async {
     try {
       if (selectedDate.isEmpty) return;
-
-      final res = await ApiService.getCntTruckCountPurchyNo(selectedDate);
-
-      if (res.success == 1) {
-        setState(() {
-          cnttruckPurNo = res.total.toString();
-        });
-      }
+      final res = await ApiService.getCartPurchyNo(selectedDate);
+      if (res.success == 1) cartPurNo = res.total;
     } catch (e) {
-      debugPrint("Truck Purchy No Error: $e");
+      debugPrint("Cart Purchy No Error: $e");
     }
   }
 
-
-  Future<void> loadTruckCountGross() async {
-    try {
-      final res = await ApiService.getTruckCountGross();
-
-      if (res.success == 1) {
-        setState(() {
-          cnttruckInDonga = res.total.toString();
-        });
-      }
-    } catch (e) {
-      debugPrint("Truck Gross Count Error: $e");
-    }
-  }
-
-
-  Future<void> loadCntTruckCount() async {
-    try {
-      final res = await ApiService.getCntTruckCount();
-
-      if (res.success == 1) {
-        setState(() {
-          cnttruckInYard = res.total.toString();  // use it wherever needed
-        });
-      }
-    } catch (e) {
-      debugPrint("Cnt Truck Count Error: $e");
-    }
-  }
-
-
-
-  Future<void> loadTruckPurchyQty() async {
+  Future<void> loadCartPurchyQty() async {
     try {
       if (selectedDate.isEmpty) return;
-
-      final res =
-      await ApiService.getTruckCountPurchyNoQty(selectedDate);
-
-      if (res.success == 1) {
-        setState(() {
-          truckTodayQty = res.total.toStringAsFixed(2);
-        });
-      }
+      final res = await ApiService.getCartPurchyQty(selectedDate);
+      if (res.success == 1) cartPurQty = res.total;
     } catch (e) {
-      debugPrint("Truck Purchy Qty Error: $e");
+      debugPrint("Cart Purchy Qty Error: $e");
     }
   }
-
-
-  Future<void> loadTruckPurchyNo() async {
-    try {
-      if (selectedDate.isEmpty) return;
-
-      final res =
-      await ApiService.getTruckCountPurchyNo(selectedDate);
-
-      if (res.success == 1) {
-        setState(() {
-          truckPurNo = res.total.toString();
-        });
-      }
-    } catch (e) {
-      debugPrint("Truck Purchy No Error: $e");
-    }
-  }
-
-
-  Future<void> loadTruckCountDonga() async {
-    try {
-      final res = await ApiService.getTruckCountDonga();
-
-      if (res.success == 1) {
-        setState(() {
-          truckInDonga = res.total.toString();
-        });
-      }
-    } catch (e) {
-      debugPrint("Truck In Donga Error: $e");
-    }
-  }
-
-
-
-  Future<void> loadTruckCount() async {
-    try {
-      final res = await ApiService.getTruckCount();
-
-      if (res.success == 1) {
-        setState(() {
-          truckInYard = res.total.toString();
-        });
-      }
-    } catch (e) {
-      debugPrint("Truck In Yard Error: $e");
-    }
-  }
-
-
-
-  Future<void> loadTrolleyPurchyQty() async {
-    try {
-      if (selectedDate.isEmpty) return;
-
-      final res =
-      await ApiService.getTrolleyPurchyQty(selectedDate);
-
-      if (res.success == 1) {
-        setState(() {
-          trolleyTodayQty =
-              res.total.toStringAsFixed(2);
-        });
-      }
-    } catch (e) {
-      debugPrint("Trolley Purchy Qty Error: $e");
-    }
-  }
-
-
-
-  Future<void> loadTrolleyPurchyNo() async {
-    try {
-      if (selectedDate.isEmpty) return;
-
-      final res =
-      await ApiService.getTrolleyPurchyNo(selectedDate);
-
-      if (res.success == 1) {
-        setState(() {
-          trolleyPurNo = res.total.toString();
-        });
-      }
-    } catch (e) {
-      debugPrint("Trolley Purchy No Error: $e");
-    }
-  }
-
-
-
-
-  Future<void> loadTrolleyCountDonga() async {
-    try {
-      final res = await ApiService.getTrolleyCountDonga();
-
-      if (res.success == 1) {
-        setState(() {
-          trolleyInDonga = res.total.toString();
-        });
-      }
-    } catch (e) {
-      debugPrint("Trolley Donga Error: $e");
-    }
-  }
-
 
   Future<void> loadTrolleyCount() async {
     try {
       final res = await ApiService.getTrolleyCount();
-
-      if (res.success == 1) {
-        setState(() {
-          trolleyInYard = res.total.toString();
-        });
-      }
+      if (res.success == 1) trolleyInYard = res.total;
     } catch (e) {
       debugPrint("Trolley Count Error: $e");
     }
   }
 
+  Future<void> loadTrolleyCountDonga() async {
+    try {
+      final res = await ApiService.getTrolleyCountDonga();
+      if (res.success == 1) trolleyInDonga = res.total;
+    } catch (e) {
+      debugPrint("Trolley Donga Error: $e");
+    }
+  }
 
+  Future<void> loadTrolleyPurchyNo() async {
+    try {
+      if (selectedDate.isEmpty) return;
+      final res = await ApiService.getTrolleyPurchyNo(selectedDate);
+      if (res.success == 1) trolleyPurNo = res.total;
+    } catch (e) {
+      debugPrint("Trolley Purchy No Error: $e");
+    }
+  }
+
+  Future<void> loadTrolleyPurchyQty() async {
+    try {
+      if (selectedDate.isEmpty) return;
+      final res = await ApiService.getTrolleyPurchyQty(selectedDate);
+      if (res.success == 1) trolleyTodayQty = res.total;
+    } catch (e) {
+      debugPrint("Trolley Purchy Qty Error: $e");
+    }
+  }
+
+  Future<void> loadTruckCount() async {
+    try {
+      final res = await ApiService.getTruckCount();
+      if (res.success == 1) truckInYard = res.total;
+    } catch (e) {
+      debugPrint("Truck In Yard Error: $e");
+    }
+  }
+
+  Future<void> loadTruckCountDonga() async {
+    try {
+      final res = await ApiService.getTruckCountDonga();
+      if (res.success == 1) truckInDonga = res.total;
+    } catch (e) {
+      debugPrint("Truck In Donga Error: $e");
+    }
+  }
+
+  Future<void> loadTruckPurchyNo() async {
+    try {
+      if (selectedDate.isEmpty) return;
+      final res = await ApiService.getTruckCountPurchyNo(selectedDate);
+      if (res.success == 1) truckPurNo = res.total;
+    } catch (e) {
+      debugPrint("Truck Purchy No Error: $e");
+    }
+  }
+
+  Future<void> loadTruckPurchyQty() async {
+    try {
+      if (selectedDate.isEmpty) return;
+      final res = await ApiService.getTruckCountPurchyNoQty(selectedDate);
+      if (res.success == 1) truckTodayQty = res.total;
+    } catch (e) {
+      debugPrint("Truck Purchy Qty Error: $e");
+    }
+  }
+
+  Future<void> loadCntTruckCount() async {
+    try {
+      final res = await ApiService.getCntTruckCount();
+      if (res.success == 1) cnttruckInYard = res.total;
+    } catch (e) {
+      debugPrint("Cnt Truck Count Error: $e");
+    }
+  }
+
+  Future<void> loadTruckCountGross() async {
+    try {
+      final res = await ApiService.getTruckCountGross();
+      if (res.success == 1) cnttruckInDonga = res.total;
+    } catch (e) {
+      debugPrint("Truck Gross Count Error: $e");
+    }
+  }
+
+  Future<void> loadCntTruckPurchyNo() async {
+    try {
+      if (selectedDate.isEmpty) return;
+      final res = await ApiService.getCntTruckCountPurchyNo(selectedDate);
+      if (res.success == 1) cnttruckPurNo = res.total;
+    } catch (e) {
+      debugPrint("Truck Purchy No Error: $e");
+    }
+  }
+
+  Future<void> loadCntTruckPurchyQty() async {
+    try {
+      if (selectedDate.isEmpty) return;
+      final res = await ApiService.getCntTruckCountPurchyNoQty(selectedDate);
+      if (res.success == 1) cnttruckTodayQty = res.total;
+    } catch (e) {
+      debugPrint("Truck Purchy Qty Error: $e");
+    }
+  }
 
   /// ================= LOAD PREF + PLANT =================
   Future<void> loadData() async {
     final sp = await SharedPreferences.getInstance();
     final plantCode = sp.getString("PLANT_CODE");
-
-    if (plantCode != null) {
-      plantName = await ApiService.fetchPlantNameByCode(plantCode);
-    }
-
+    if (plantCode != null) plantName = await ApiService.fetchPlantNameByCode(plantCode);
     setState(() {});
   }
 
@@ -293,88 +282,13 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
     setState(() {});
   }
 
-  /// ================= CART COUNT API =================
-  Future<void> loadCartCount() async {
-    try {
-      CartCountResponse res = await ApiService.getCartCount();
-
-      if (res.success == 1) {
-        setState(() {
-          // ✅ index = 1 (InYard)
-          cartInYard = res.total.toString();
-        });
-      }
-    } catch (e) {
-      debugPrint("Cart API Error: $e");
-    }
-  }
-
-
-  Future<void> loadCartCountDonga() async {
-    try {
-      final res = await ApiService.getCartCountDonga();
-
-      if (res.success == 1) {
-        setState(() {
-          // ✅ index = 2 (InDonga)
-          cartInDonga = res.total.toString();
-        });
-      }
-    } catch (e) {
-      debugPrint("Cart InDonga Error: $e");
-    }
-  }
-
-
-  Future<void> loadCartPurchyNo() async {
-    try {
-      if (selectedDate.isEmpty) return;
-
-      final res =
-      await ApiService.getCartPurchyNo(selectedDate);
-
-      if (res.success == 1) {
-        setState(() {
-          // ✅ index = 3
-          cartPurNo = res.total.toString();
-        });
-      }
-    } catch (e) {
-      debugPrint("Cart Purchy No Error: $e");
-    }
-  }
-
-
-  Future<void> loadCartPurchyQty() async {
-    try {
-      if (selectedDate.isEmpty) return;
-
-      final res =
-      await ApiService.getCartPurchyQty(selectedDate);
-
-      if (res.success == 1) {
-        setState(() {
-          cartPurQty = res.total.toStringAsFixed(2);
-        });
-      }
-    } catch (e) {
-      debugPrint("Cart Purchy Qty Error: $e");
-    }
-  }
-
-
-
-
   /// ================= UI HELPERS =================
   Widget cell(String text, {bool bold = false}) {
     return Expanded(
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-        ),
+        style: TextStyle(fontSize: 14, fontWeight: bold ? FontWeight.bold : FontWeight.normal),
       ),
     );
   }
@@ -382,21 +296,14 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
   Widget row(List<String> values, {bool bold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: values.map((e) => cell(e, bold: bold)).toList(),
-      ),
+      child: Row(children: values.map((e) => cell(e, bold: bold)).toList()),
     );
   }
 
   Widget titleLine(String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Center(
-        child: Text(
-          text,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
+      child: Center(child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold))),
     );
   }
 
@@ -404,10 +311,7 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Yard Position"),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text("Yard Position"), centerTitle: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -416,88 +320,53 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
             /// PLANT NAME
             Center(
               child: Text(
-                plantName.isEmpty
-                    ? "Cane Management System"
-                    : plantName,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                ),
+                plantName.isEmpty ? "Cane Management System" : plantName,
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
               ),
             ),
-
             const SizedBox(height: 12),
 
             /// DATE
             Row(
               children: [
-                const Expanded(
-                  child: Text("Yard Position as on Date:"),
-                ),
-                Text(
-                  selectedDate,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
+                const Expanded(child: Text("Yard Position as on Date:")),
+                Text(selectedDate, style: const TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
-
             const Divider(),
 
             /// HEADER
-            row(
-              ["Supply", "InYard", "InDonga", "Pur No", "TodayPur(Qty)"],
-              bold: true,
-            ),
+            row(["Supply", "InYard", "InDonga", "Pur No", "TodayPur(Qty)"], bold: true),
 
             /// ================= AT GATE =================
             titleLine("----------- AT GATE -----------"),
-
-            row([
-              "Cart",
-              cartInYard,      // 👈 API VALUE HERE
-              cartInDonga,
-              cartPurNo,
-              cartPurQty,
-            ]),
-
-            row([
-              "Trolley",
-              trolleyInYard,
-              trolleyInDonga,
-              trolleyPurNo,
-              trolleyTodayQty,
-            ]),
-
-            row([
-              "Truck",
-              truckInYard,   // 👈 API VALUE
-              truckInDonga,
-              truckPurNo,
-              truckTodayQty,
-            ]),
-
+            row(["Cart", "$cartInYard", "$cartInDonga", "$cartPurNo", "${cartPurQty.toStringAsFixed(2)}"]),
+            row(["Trolley", "$trolleyInYard", "$trolleyInDonga", "$trolleyPurNo", "${trolleyTodayQty.toStringAsFixed(2)}"]),
+            row(["Truck", "$truckInYard", "$truckInDonga", "$truckPurNo", "${truckTodayQty.toStringAsFixed(2)}"]),
 
             /// ================= CENTRE =================
             titleLine("------- CENTRE RECEIPT -------"),
-
-            row([
-              "Truck",
-              cnttruckInYard,   // 👈 API VALUE
-              cnttruckInDonga,
-              cnttruckPurNo,
-              cnttruckTodayQty,
-            ]),
+            row(["Truck", "$cnttruckInYard", "$cnttruckInDonga", "$cnttruckPurNo", "${cnttruckTodayQty.toStringAsFixed(2)}"]),
 
             titleLine("==================================="),
-            row(["Total", "00", "00", "00", "00.00"], bold: true),
+            row([
+              "Total",
+              "$totalInYard",
+              "$totalInDonga",
+              "$totalPurNo",
+              "${totalTodayQty.toStringAsFixed(2)}"
+            ], bold: true),
             titleLine("==================================="),
 
             const SizedBox(height: 10),
-
-            const Text(
-              "Todate Purchase : 00.00",
-              style: TextStyle(fontWeight: FontWeight.bold),
+            Text(
+              "Todate Purchase : ${grandTotalPurchase.toStringAsFixed(2)}",
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
             ),
+
           ],
         ),
       ),

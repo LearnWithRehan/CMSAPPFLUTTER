@@ -15,6 +15,7 @@ import '../../models/cart_count_purchy_response.dart';
 import '../../models/cart_count_response.dart';
 import '../../models/centre_wise_total_cane_model.dart';
 import '../../models/day_wise_centre_graph_model.dart';
+import '../../models/grand_total_response.dart';
 import '../../models/plant_model.dart';
 import '../../models/login_request.dart';
 import '../../models/login_response.dart';
@@ -688,6 +689,37 @@ class ApiService {
 
     final jsonData = json.decode(response.body);
     return CntTruckCountInYardResponsePurchyNoQty.fromJson(jsonData);
+  }
+
+
+  /// =========================
+  /// 📊 GRAND TOTAL TODATE PURCHASE
+  /// =========================
+  static Future<GrandTotalResponse> getGrandTotal(String selectedDate) async {
+    final sp = await SharedPreferences.getInstance();
+    final plantCode = sp.getString("PLANT_CODE");
+
+    if (plantCode == null) {
+      throw Exception("Plant code not found");
+    }
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + ApiConstants.hourlyReportTotPur),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+        "selectedDate": selectedDate,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+    return GrandTotalResponse.fromJson(jsonData);
   }
 
 
