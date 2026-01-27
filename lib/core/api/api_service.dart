@@ -16,6 +16,8 @@ import '../../models/cart_count_response.dart';
 import '../../models/centre_wise_total_cane_model.dart';
 import '../../models/day_wise_centre_graph_model.dart';
 import '../../models/grand_total_response.dart';
+import '../../models/hourly_crushing_response.dart';
+import '../../models/hourly_row_model.dart';
 import '../../models/plant_model.dart';
 import '../../models/login_request.dart';
 import '../../models/login_response.dart';
@@ -720,6 +722,43 @@ class ApiService {
 
     final jsonData = json.decode(response.body);
     return GrandTotalResponse.fromJson(jsonData);
+  }
+
+
+
+// =========================
+// ⏱ HOURLY CRUSHING (SHIFT A / B / C)
+// =========================
+  static Future<List<HourlyRowModel>> fetchHourlyShift(
+      String endpoint,
+      String plantCode,
+      String selectedDate,
+      ) async {
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + endpoint),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+        "selectedDate": selectedDate,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+
+    if (jsonData['success'] == 1) {
+      return (jsonData['data'] as List)
+          .map((e) => HourlyRowModel.fromJson(e))
+          .toList();
+    } else {
+      throw Exception(jsonData['message'] ?? "API Error");
+    }
   }
 
 
