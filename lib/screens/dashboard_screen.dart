@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api/api_service.dart';
 import 'LoginScreen.dart';
+import 'centre_wise_date_screen.dart';
 import 'graph_design_screen.dart';
 import 'hourly_crushing_date_screen.dart';
 
@@ -150,7 +151,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_CENTRE))
-                          dashboardItem("CentreWise", Icons.location_city),
+                          dashboardItem("CentreWise", Icons.location_city, (){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const CentreWiseDateScreen(),
+                              ),
+                            );
+                          }),
 
                         if (isAllowed(P_VARIETY))
                           dashboardItem("VarietyWise", Icons.agriculture),
