@@ -13,10 +13,10 @@ import '../../models/cart_count_donga_response.dart';
 import '../../models/cart_count_purchy_qty_response.dart';
 import '../../models/cart_count_purchy_response.dart';
 import '../../models/cart_count_response.dart';
+import '../../models/centre_response.dart';
 import '../../models/centre_wise_total_cane_model.dart';
 import '../../models/day_wise_centre_graph_model.dart';
 import '../../models/grand_total_response.dart';
-import '../../models/hourly_crushing_response.dart';
 import '../../models/hourly_row_model.dart';
 import '../../models/plant_model.dart';
 import '../../models/login_request.dart';
@@ -759,6 +759,35 @@ class ApiService {
     } else {
       throw Exception(jsonData['message'] ?? "API Error");
     }
+  }
+
+
+
+  static Future<CentreResponse> getCentreReport(String date) async {
+    final sp = await SharedPreferences.getInstance();
+    final plantCode = sp.getString("PLANT_CODE");
+
+    if (plantCode == null || plantCode.isEmpty) {
+      throw Exception("Plant code not found in preferences");
+    }
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "centreWiseReport.php"),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+        "date": date,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server error");
+    }
+
+    final jsonData = json.decode(response.body);
+    return CentreResponse.fromJson(jsonData);
   }
 
 

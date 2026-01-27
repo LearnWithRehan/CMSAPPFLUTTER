@@ -54,7 +54,7 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
   @override
   void initState() {
     super.initState();
-    isLoading = false;
+    isLoading = true;
     _initAll();
   }
 
@@ -83,6 +83,11 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
 
 
     _calculateTotals();
+
+    // ✅ STOP LOADING
+    setState(() {
+      isLoading = false;
+    });
   }
 
   /// ================= CALCULATE TOTALS =================
@@ -312,7 +317,11 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Yard Position"), centerTitle: true),
-      body: SingleChildScrollView(
+      body: isLoading
+          ? const Center(
+        child: CircularProgressIndicator(), // 🔄 ANDROID JAISE
+      )
+      : SingleChildScrollView(
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
