@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../core/api/api_service.dart';
 import 'hourly_crushing_report_screen.dart';
 import 'hourly_report_two_to_two_screen.dart';
+import '../models/plant_model.dart';
 
 class HourlyCrushingDateScreen extends StatefulWidget {
   const HourlyCrushingDateScreen({super.key});
@@ -16,17 +18,46 @@ class HourlyCrushingDateScreen extends StatefulWidget {
 class _HourlyCrushingDateScreenState extends State<HourlyCrushingDateScreen> {
   late DateTime selectedDate;
 
+  String plantName = "";
+  String plantCode = "";
+
   @override
   void initState() {
     super.initState();
-    selectedDate = DateTime.now(); // 🔹 Today Date
+    selectedDate = DateTime.now();
+    loadPlantName();
   }
 
-  /// 📅 DATE FORMAT
+  /// 🔹 Load Plant Name using Plant Code
+  Future<void> loadPlantName() async {
+    final sp = await SharedPreferences.getInstance();
+    plantCode = sp.getString("PLANT_CODE") ?? "";
+
+    if (plantCode.isEmpty) return;
+
+    try {
+      final plants = await ApiService.fetchPlants();
+      final plant = plants.firstWhere(
+            (e) => e.plantCode == plantCode,
+        orElse: () => PlantModel(
+          plantCode: plantCode,
+          plantName: "",
+        ),
+      );
+
+      setState(() {
+        plantName = plant.plantName;
+      });
+    } catch (e) {
+      debugPrint("Plant Load Error: $e");
+    }
+  }
+
+  /// 📅 Date Format
   String get formattedDate =>
       DateFormat('dd-MM-yyyy').format(selectedDate);
 
-  /// 📆 OPEN DATE PICKER
+  /// 📆 Date Picker
   Future<void> pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -42,12 +73,10 @@ class _HourlyCrushingDateScreenState extends State<HourlyCrushingDateScreen> {
     }
   }
 
-  /// ▶️ PROCESS BUTTON
+  /// ▶️ Process Button
   Future<void> onProcess() async {
     final sp = await SharedPreferences.getInstance();
-
     await sp.setString("SELECTED_DATEHOURLY", formattedDate);
-    final plantCode = sp.getString("PLANT_CODE") ?? "";
 
     if (plantCode == "105" || plantCode == "104") {
       Navigator.push(
@@ -72,7 +101,7 @@ class _HourlyCrushingDateScreenState extends State<HourlyCrushingDateScreen> {
     final isWeb = width > 600;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: const Color(0xFFF4F6FA),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -83,43 +112,58 @@ class _HourlyCrushingDateScreenState extends State<HourlyCrushingDateScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
 
-                  /// 🔷 HEADER CARD
+                  /// 🔷 HEADER
                   Card(
-                    elevation: 6,
+                    elevation: 8,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(22),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
 
-                          /// TITLE
-                          Center(
-                            child: Text(
-                              "Hourly Report",
+                          /// 🏭 PLANT NAME
+                          if (plantName.isNotEmpty)
+                            Text(
+                              plantName,
+                              textAlign: TextAlign.center,
                               style: TextStyle(
-                                fontSize: isWeb ? 28 : 24,
-                                fontStyle: FontStyle.italic,
-                                fontWeight: FontWeight.w600,
+                                fontSize: isWeb ? 20 : 18,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF2C4D76),
+                              ),
+                            ),
+
+                          const SizedBox(height: 6),
+
+                          /// 📊 REPORT TITLE
+                          Text(
+                            "Hourly Crushing Report",
+                            style: TextStyle(
+                              fontSize: isWeb ? 26 : 22,
+                              fontStyle: FontStyle.italic,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
+                          const Divider(height: 30),
+
+                          /// LABEL
+                          const Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Select Date",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black54,
                               ),
                             ),
                           ),
 
-                          const SizedBox(height: 24),
-
-                          /// LABEL
-                          const Text(
-                            "Select Date",
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black54,
-                            ),
-                          ),
-
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 10),
 
                           /// DATE PICKER
                           InkWell(
@@ -158,7 +202,7 @@ class _HourlyCrushingDateScreenState extends State<HourlyCrushingDateScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 22),
 
                   /// ▶️ PROCESS BUTTON
                   SizedBox(
@@ -169,7 +213,7 @@ class _HourlyCrushingDateScreenState extends State<HourlyCrushingDateScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2C4D76),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         elevation: 6,
                       ),
