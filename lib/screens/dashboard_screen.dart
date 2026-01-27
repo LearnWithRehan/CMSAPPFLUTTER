@@ -13,7 +13,6 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-
   /// ================= DATA =================
   String plantName = "";
   int userRole = 0;
@@ -66,7 +65,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        /// 🔴 BACK PRESS → LOGIN SCREEN
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -79,11 +77,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         body: SafeArea(
           child: Column(
             children: [
-
               /// 🔷 HEADER
               Container(
-                margin: const EdgeInsets.fromLTRB(16, 20, 16, 16),
-                padding: const EdgeInsets.all(20),
+                margin: const EdgeInsets.fromLTRB(16, 16, 16, 10),
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: const Color(0xFF608A88),
@@ -93,6 +90,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   plantName.isEmpty
                       ? "Cane Management System"
                       : plantName,
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 15,
@@ -101,84 +99,86 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
 
-              /// 🔲 GRID
+              /// 🔲 RESPONSIVE GRID
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: GridView.count(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 1.1,
-                    children: [
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    double width = constraints.maxWidth;
 
-                      /// ✅ GRAPH SCREEN NAVIGATION
-                      if (isAllowed(P_GRAPH))
-                        dashboardItem(
-                          "Inflow Analysis",
-                          Icons.bar_chart,
-                          onTap: () {
+                    int crossAxisCount = 2;
+                    if (width > 600) crossAxisCount = 3;
+                    if (width > 900) crossAxisCount = 4;
+
+                    return GridView(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 1.2,
+                      ),
+                      children: [
+                        if (isAllowed(P_GRAPH))
+                          dashboardItem("Inflow Analysis", Icons.bar_chart, () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => const GraphDesign_Screen(),
                               ),
                             );
-                          },
-                        ),
+                          }),
 
-                      if (isAllowed(P_YARD))
-                        dashboardItem("Yard Position", Icons.warehouse,
-                          onTap: () {
+                        if (isAllowed(P_YARD))
+                          dashboardItem("Yard Position", Icons.warehouse, () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => const ShowYardDataScreen(),
                               ),
                             );
-                          },
-                        ),
+                          }),
 
-                      if (isAllowed(P_HOURLY))
-                        dashboardItem("Hourly Report", Icons.schedule),
+                        if (isAllowed(P_HOURLY))
+                          dashboardItem("Hourly Report", Icons.schedule),
 
-                      if (isAllowed(P_CENTRE))
-                        dashboardItem("CentreWise", Icons.location_city),
+                        if (isAllowed(P_CENTRE))
+                          dashboardItem("CentreWise", Icons.location_city),
 
-                      if (isAllowed(P_VARIETY))
-                        dashboardItem("VarietyWise", Icons.agriculture),
+                        if (isAllowed(P_VARIETY))
+                          dashboardItem("VarietyWise", Icons.agriculture),
 
-                      if (isAllowed(P_PAYMENT))
-                        dashboardItem("CentreWise Total", Icons.summarize),
+                        if (isAllowed(P_PAYMENT))
+                          dashboardItem("CentreWise Total", Icons.summarize),
 
-                      if (isAllowed(P_GROWER))
-                        dashboardItem("Grower Ledger", Icons.person),
+                        if (isAllowed(P_GROWER))
+                          dashboardItem("Grower Ledger", Icons.person),
 
-                      if (isAllowed(P_CONTRACTOR))
-                        dashboardItem("Transporter Details", Icons.local_shipping),
+                        if (isAllowed(P_CONTRACTOR))
+                          dashboardItem("Transporter Details", Icons.local_shipping),
 
-                      if (isAllowed(P_CENTREMILL))
-                        dashboardItem("Centre & Mill Gate", Icons.factory),
+                        if (isAllowed(P_CENTREMILL))
+                          dashboardItem("Centre & Mill Gate", Icons.factory),
 
-                      if (isAllowed(P_VILLAGE))
-                        dashboardItem("Village Purchase", Icons.location_on),
+                        if (isAllowed(P_VILLAGE))
+                          dashboardItem("Village Purchase", Icons.location_on),
 
-                      if (isAllowed(P_USER))
-                        dashboardItem("Create User", Icons.person_add),
+                        if (isAllowed(P_USER))
+                          dashboardItem("Create User", Icons.person_add),
 
-                      if (isAllowed(P_WBCONTROL))
-                        dashboardItem("WB CONTROL", Icons.settings),
+                        if (isAllowed(P_WBCONTROL))
+                          dashboardItem("WB Control", Icons.settings),
 
-                      if (isAllowed(P_SCREENMASTER))
-                        dashboardItem("SCREEN MASTER", Icons.dashboard_customize),
+                        if (isAllowed(P_SCREENMASTER))
+                          dashboardItem("Screen Master", Icons.dashboard_customize),
 
-                      if (isAllowed(P_WBRANGE))
-                        dashboardItem("WB RANGE", Icons.tune),
+                        if (isAllowed(P_WBRANGE))
+                          dashboardItem("WB Range", Icons.tune),
 
-                      if (isAllowed(P_ROLEMASTER))
-                        dashboardItem("ROLE MASTER", Icons.security),
-                    ],
-                  ),
+                        if (isAllowed(P_ROLEMASTER))
+                          dashboardItem("Role Master", Icons.security),
+                      ],
+                    );
+                  },
                 ),
               ),
             ],
@@ -188,34 +188,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  /// ================= CARD =================
-  Widget dashboardItem(
-      String title,
-      IconData icon, {
-        VoidCallback? onTap,
-      }) {
+  /// ================= DASHBOARD CARD =================
+  Widget dashboardItem(String title, IconData icon, [VoidCallback? onTap]) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: const [
-            BoxShadow(color: Colors.black26, blurRadius: 5),
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
           ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 48, color: const Color(0xFF2C4D76)),
-            const SizedBox(height: 8),
+            Icon(icon, size: 36, color: const Color(0xFF2C4D76)),
+            const SizedBox(height: 6),
             Text(
               title,
               textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 16,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
                 color: Color(0xFF2C4D76),
               ),
             ),
