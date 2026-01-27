@@ -14,35 +14,72 @@ class HourlyCrushingReportScreen extends StatefulWidget {
 class _HourlyCrushingReportScreenState
     extends State<HourlyCrushingReportScreen> {
 
+  double grandTotalPurchase = 0.0;
+
   List<HourlyRowModel> shiftA = [];
   List<HourlyRowModel> shiftB = [];
   List<HourlyRowModel> shiftC = [];
 
   bool loading = true;
 
+  String plantCode = "";
+  String selectedDate = "";
+
   @override
   void initState() {
     super.initState();
-    loadData();
+    init();
   }
 
-  Future<void> loadData() async {
+  /// ================= INIT =================
+  Future<void> init() async {
     final sp = await SharedPreferences.getInstance();
-    final plantCode = sp.getString("PLANT_CODE") ?? "";
-    final date = sp.getString("SELECTED_DATEHOURLY") ?? "";
 
-    final a = await ApiService.fetchHourlyShift("ShiftA.php", plantCode, date);
-    final b = await ApiService.fetchHourlyShift("ShiftB.php", plantCode, date);
-    final c = await ApiService.fetchHourlyShift("ShiftC.php", plantCode, date);
+    plantCode = sp.getString("PLANT_CODE") ?? "";
+    selectedDate = sp.getString("SELECTED_DATEHOURLY") ?? "";
 
+    debugPrint("PLANT CODE : $plantCode");
+    debugPrint("SELECTED DATE : $selectedDate");
+
+    await loadData();
+    await loadGrandTotalPurchase();
 
     setState(() {
-      shiftA = a;
-      shiftB = b;
-      shiftC = c;
       loading = false;
     });
   }
+
+  /// ================= SHIFT DATA =================
+  Future<void> loadData() async {
+    shiftA = await ApiService.fetchHourlyShift(
+        "ShiftA.php", plantCode, selectedDate);
+
+    shiftB = await ApiService.fetchHourlyShift(
+        "ShiftB.php", plantCode, selectedDate);
+
+    shiftC = await ApiService.fetchHourlyShift(
+        "ShiftC.php", plantCode, selectedDate);
+  }
+
+  /// ================= GRAND TOTAL =================
+  Future<void> loadGrandTotalPurchase() async {
+    try {
+      if (selectedDate.isEmpty) return;
+
+      final res = await ApiService.getGrandTotal(
+        selectedDate, // ✅ ONLY date
+      );
+
+      if (res.success == 1) {
+        setState(() {
+          grandTotalPurchase = res.grandTotal;
+        });
+      }
+    } catch (e) {
+      debugPrint("Grand Total Error: $e");
+    }
+  }
+
 
   // ================= TOTAL CALCULATIONS =================
 
@@ -70,9 +107,10 @@ class _HourlyCrushingReportScreenState
   // ================= UI HELPERS =================
 
   Widget cell(String v, {bool bold = false}) => Padding(
-    padding: const EdgeInsets.all(4),
+    padding: const EdgeInsets.all(6),
     child: Text(
       v,
+      maxLines: 1,
       textAlign: TextAlign.center,
       style: TextStyle(
         fontSize: 12,
@@ -84,14 +122,7 @@ class _HourlyCrushingReportScreenState
   TableRow headerRow() => TableRow(
     decoration: const BoxDecoration(color: Color(0xFFE0E0E0)),
     children: [
-      "Hour",
-      "Cart",
-      "Wt",
-      "Trolley",
-      "Wt",
-      "Truck",
-      "Wt",
-      "Total"
+      "Hour", "Cart", "Wt", "Trolley", "Wt", "Truck", "Wt", "Total"
     ].map((e) => cell(e, bold: true)).toList(),
   );
 
@@ -109,9 +140,7 @@ class _HourlyCrushingReportScreenState
   TableRow divider() => TableRow(
     children: List.generate(
       8,
-          (_) => const Center(
-        child: Text("—", style: TextStyle(fontWeight: FontWeight.bold)),
-      ),
+          (_) => const Center(child: Text("—")),
     ),
   );
 
@@ -140,32 +169,76 @@ class _HourlyCrushingReportScreenState
     final all = [...shiftA, ...shiftB, ...shiftC];
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Hourly Crushing Report")),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(6),
-        child: Table(
-          border: TableBorder.all(color: Colors.black26),
-          children: [
-            headerRow(),
+      appBar: AppBar(
+        title: const Text("Hourly Crushing Report"),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Center(
+              child: Text(
+                "Date : $selectedDate",
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
 
-            ...shiftA.map(row),
-            divider(),
-            totalRow("Shift A", shiftA),
-            divider(),
+      body: Column(
+        children: [
 
-            ...shiftB.map(row),
-            divider(),
-            totalRow("Shift B", shiftB),
-            divider(),
+          /// TABLE
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(6),
+                child: Table(
+                  defaultColumnWidth: const FixedColumnWidth(70),
+                  border: TableBorder.all(color: Colors.black26),
+                  children: [
+                    headerRow(),
 
-            ...shiftC.map(row),
-            divider(),
-            totalRow("Shift C", shiftC),
-            divider(),
+                    ...shiftA.map(row),
+                    divider(),
+                    totalRow("Shift A", shiftA),
+                    divider(),
 
-            totalRow("TOTAL", all),
-          ],
-        ),
+                    ...shiftB.map(row),
+                    divider(),
+                    totalRow("Shift B", shiftB),
+                    divider(),
+
+                    ...shiftC.map(row),
+                    divider(),
+                    totalRow("Shift C", shiftC),
+                    divider(),
+
+                    totalRow("TOTAL", all),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          /// GRAND TOTAL
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            color: Colors.grey.shade200,
+            child: Text(
+              "Todate Purchase : ${grandTotalPurchase.toStringAsFixed(2)}",
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
