@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api/api_service.dart';
 import 'LoginScreen.dart';
 import 'graph_design_screen.dart';
+import 'hourly_crushing_date_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -139,7 +140,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_HOURLY))
-                          dashboardItem("Hourly Report", Icons.schedule),
+                          dashboardItem("Hourly Report", Icons.schedule, (){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const HourlyCrushingDateScreen(),
+                              ),
+                            );
+                          }),
 
                         if (isAllowed(P_CENTRE))
                           dashboardItem("CentreWise", Icons.location_city),
