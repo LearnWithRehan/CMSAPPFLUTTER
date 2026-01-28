@@ -1,6 +1,10 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Prefs {
+
+  /* =====================
+     🔐 LOGIN DATA
+     ===================== */
   static Future<void> saveLogin({
     required String userId,
     required int role,
@@ -14,9 +18,47 @@ class Prefs {
     await sp.setString("PLANT_CODE", plantCode);
     await sp.setStringList("PERMISSIONS", permissions);
   }
-  // ✅ ADD THIS
+
   static Future<String> getPlantCode() async {
     final sp = await SharedPreferences.getInstance();
     return sp.getString("PLANT_CODE") ?? "";
+  }
+
+  /* =====================
+     📅 CONTRACTOR FILTER
+     (Java SharedPreferences equivalent)
+     ===================== */
+
+  static Future<void> saveContractorFilter({
+    required String fromDate,
+    required String tillDate,
+    required String conCode,
+  }) async {
+    final sp = await SharedPreferences.getInstance();
+
+    await sp.setString("FROM_DATECON", fromDate);
+    await sp.setString("TILL_DATECON", tillDate);
+    await sp.setString("CON_CODE", conCode);
+  }
+
+  static Future<Map<String, String>> getContractorFilter() async {
+    final sp = await SharedPreferences.getInstance();
+
+    return {
+      "fromDate": sp.getString("FROM_DATECON") ?? "",
+      "tillDate": sp.getString("TILL_DATECON") ?? "",
+      "conCode": sp.getString("CON_CODE") ?? "",
+    };
+  }
+
+  /* =====================
+     🧹 CLEAR (OPTIONAL)
+     ===================== */
+
+  static Future<void> clearContractorFilter() async {
+    final sp = await SharedPreferences.getInstance();
+    await sp.remove("FROM_DATECON");
+    await sp.remove("TILL_DATECON");
+    await sp.remove("CON_CODE");
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:canemanagementsystem/core/api/storage/app_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,6 +18,8 @@ import '../../models/centre_kudiya_purchase_model.dart';
 import '../../models/centre_purchase_model.dart';
 import '../../models/centre_response.dart';
 import '../../models/centre_wise_total_cane_model.dart';
+import '../../models/contractor_model.dart';
+import '../../models/contractor_receipt_model.dart';
 import '../../models/day_wise_centre_graph_model.dart';
 import '../../models/grand_total_response.dart';
 import '../../models/hourly_row_model.dart';
@@ -916,7 +919,52 @@ class ApiService {
   }
 
 
+  // 🔹 Contractor List
+  static Future<List<ContractorModel>> getContractorList() async {
+    final plantCode = await Prefs.getPlantCode();
 
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "get_contractor_list.php"),
+      body: {"plantCode": plantCode},
+    );
+
+    final jsonData = json.decode(response.body);
+
+    if (jsonData['success'] == 1) {
+      List list = jsonData['data'];
+      return list.map((e) => ContractorModel.fromJson(e)).toList();
+    } else {
+      throw Exception("Contractor not found");
+    }
+  }
+
+  static Future<List<ContractorReceiptModel>> getContractorReceipt({
+    required String fromDate,
+    required String tillDate,
+    required String conCode,
+  }) async {
+    final plantCode = await Prefs.getPlantCode();
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "get_contractor_receipt.php"),
+      body: {
+        "plantCode": plantCode,
+        "conCode": conCode,
+        "fromDate": fromDate,
+        "tillDate": tillDate,
+      },
+    );
+
+    final jsonData = jsonDecode(response.body);
+
+    if (jsonData['success'] == 1) {
+      return (jsonData['data'] as List)
+          .map((e) => ContractorReceiptModel.fromJson(e))
+          .toList();
+    } else {
+      return [];
+    }
+  }
 
 
 
