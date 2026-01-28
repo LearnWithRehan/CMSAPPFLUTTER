@@ -14,4 +14,9 @@ class Prefs {
     await sp.setString("PLANT_CODE", plantCode);
     await sp.setStringList("PERMISSIONS", permissions);
   }
+  // ✅ ADD THIS
+  static Future<String> getPlantCode() async {
+    final sp = await SharedPreferences.getInstance();
+    return sp.getString("PLANT_CODE") ?? "";
+  }
 }

@@ -3,6 +3,7 @@ import 'package:canemanagementsystem/screens/variety_wise_date_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api/api_service.dart';
+import 'GrowerLedgerScreen.dart';
 import 'LoginScreen.dart';
 import 'centre_wise_date_screen.dart';
 import 'centre_wise_pur_date_screen.dart';
@@ -183,7 +184,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_GROWER))
-                          dashboardItem("Grower Ledger", Icons.person),
+                          dashboardItem("Grower Ledger", Icons.person, (){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const GrowerLedgerScreen(),
+                              ),
+                            );
+                          }),
 
                         if (isAllowed(P_CONTRACTOR))
                           dashboardItem("Transporter Details", Icons.local_shipping),
