@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api/api_service.dart';
 import '../models/plant_model.dart';
 import 'variety_wise_report_screen.dart';
+import 'dashboard_screen.dart';
 
 class VarietyWiseDateScreen extends StatefulWidget {
   const VarietyWiseDateScreen({super.key});
@@ -85,139 +86,149 @@ class _VarietyWiseDateScreenState extends State<VarietyWiseDateScreen> {
     );
   }
 
+  /// 🔙 BACK TO DASHBOARD (COMMON METHOD)
+  void goToDashboard() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const DashboardScreen(),
+      ),
+          (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final isWeb = width > 600;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
+    return WillPopScope(
+      onWillPop: () async {
+        goToDashboard();
+        return false; // system back handled
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F5F5),
 
-                  /// 🔷 HEADER CARD
-                  Card(
-                    elevation: 6,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(22),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
+        /// ✅ APPBAR BACK FIX
+        appBar: AppBar(
+          title: const Text("Variety Wise Date"),
+          backgroundColor: const Color(0xFF2C4D76),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: goToDashboard,
+          ),
+        ),
 
-                          /// 🏭 PLANT NAME
-                          if (plantName.isNotEmpty)
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+
+                    /// 🔷 HEADER CARD
+                    Card(
+                      elevation: 6,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(22),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+
+                            if (plantName.isNotEmpty)
+                              Text(
+                                plantName,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: isWeb ? 20 : 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF2C4D76),
+                                ),
+                              ),
+
+                            const SizedBox(height: 6),
+
                             Text(
-                              plantName,
+                              "Variety Wise Report",
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                fontSize: isWeb ? 20 : 18,
+                                fontSize: isWeb ? 28 : 24,
+                                fontStyle: FontStyle.italic,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+
+                            const Divider(height: 30),
+
+                            const Text(
+                              "Select Date",
+                              style: TextStyle(
+                                fontSize: 14,
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFF2C4D76),
+                                color: Colors.black54,
                               ),
                             ),
 
-                          const SizedBox(height: 6),
+                            const SizedBox(height: 12),
 
-                          /// 📊 TITLE
-                          Text(
-                            "Variety Wise Report",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: isWeb ? 28 : 24,
-                              fontStyle: FontStyle.italic,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
-                            ),
-                          ),
-
-                          const Divider(height: 30),
-
-                          /// LABEL
-                          const Text(
-                            "Select Date",
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black54,
-                            ),
-                          ),
-
-                          const SizedBox(height: 12),
-
-                          /// 📅 DATE PICKER
-                          InkWell(
-                            onTap: pickDate,
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              height: 48,
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: Colors.grey.shade400,
+                            InkWell(
+                              onTap: pickDate,
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                height: 48,
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.grey.shade400),
+                                  color: Colors.white,
                                 ),
-                                color: Colors.white,
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(
-                                    Icons.calendar_today,
-                                    size: 20,
-                                    color: Colors.black54,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    formattedDate,
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ],
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.calendar_today, size: 20),
+                                    const SizedBox(width: 12),
+                                    Text(formattedDate),
+                                  ],
+                                ),
                               ),
                             ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 22),
+
+                    /// ▶️ PROCESS BUTTON
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: onProcess,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2C4D76),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 22),
-
-                  /// ▶️ PROCESS BUTTON
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: onProcess,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2C4D76),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
                         ),
-                        elevation: 6,
-                      ),
-                      child: const Text(
-                        "PROCESS",
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                        child: const Text(
+                          "PROCESS",
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
