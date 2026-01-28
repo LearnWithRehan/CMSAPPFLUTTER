@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api/api_service.dart';
 import 'LoginScreen.dart';
 import 'centre_wise_date_screen.dart';
+import 'centre_wise_pur_date_screen.dart';
 import 'graph_design_screen.dart';
 import 'hourly_crushing_date_screen.dart';
 
@@ -172,7 +173,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_PAYMENT))
-                          dashboardItem("CentreWise Total", Icons.summarize),
+                          dashboardItem("CentreWise Total", Icons.summarize, (){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const CentreWisePurDateScreen(),
+                              ),
+                            );
+                          }),
 
                         if (isAllowed(P_GROWER))
                           dashboardItem("Grower Ledger", Icons.person),

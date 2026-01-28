@@ -13,6 +13,8 @@ import '../../models/cart_count_donga_response.dart';
 import '../../models/cart_count_purchy_qty_response.dart';
 import '../../models/cart_count_purchy_response.dart';
 import '../../models/cart_count_response.dart';
+import '../../models/centre_kudiya_purchase_model.dart';
+import '../../models/centre_purchase_model.dart';
 import '../../models/centre_response.dart';
 import '../../models/centre_wise_total_cane_model.dart';
 import '../../models/day_wise_centre_graph_model.dart';
@@ -828,6 +830,69 @@ class ApiService {
   }
 
 
+
+  static Future<List<CentrePurchaseModel>> fetchCentreWisePurchase(
+      String plantCode,
+      String date,
+      ) async {
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "centreWiseReportBha.php"),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+        "date": date,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final data = jsonDecode(response.body);
+
+    if (data['success'] != 1) {
+      throw Exception(data['message'] ?? "No Data");
+    }
+
+    final List list = data['centres'];
+    return list.map((e) => CentrePurchaseModel.fromJson(e)).toList();
+  }
+
+
+
+
+  static Future<List<CentreKudiyaPurchaseModel>>
+  fetchCentreWiseKudiyaPurchase(
+      String plantCode,
+      String date,
+      ) async {
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "centreWiseReportKudiyaPurchase.php"),
+      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+      body: {
+        "plantCode": plantCode,
+        "date": date,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final data = jsonDecode(response.body);
+
+    if (data['success'] != 1) {
+      throw Exception(data['message'] ?? "No Data");
+    }
+
+    final List list = data['centres'];
+    return list
+        .map((e) => CentreKudiyaPurchaseModel.fromJson(e))
+        .toList();
+  }
 
 
 
