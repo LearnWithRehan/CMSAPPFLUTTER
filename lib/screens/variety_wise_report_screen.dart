@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../core/api/api_service.dart';
+import '../models/plant_model.dart';
+
 class VarietyWiseReportScreen extends StatefulWidget {
   const VarietyWiseReportScreen({super.key});
 
@@ -12,31 +15,88 @@ class VarietyWiseReportScreen extends StatefulWidget {
 class _VarietyWiseReportScreenState
     extends State<VarietyWiseReportScreen> {
   String plantName = "";
+  String plantCode = "";
   String selectedDate = "";
+
+  double earlyToday = 0;
+  double generalToday = 0;
+  double rejectToday = 0;
+  double totalToday = 0;
+
+  double earlyToDate = 0;
+  double generalToDate = 0;
+  double rejectToDate = 0;
+  double totalToDate = 0;
+
+  bool loading = true;
 
   @override
   void initState() {
     super.initState();
-    loadHeaderData();
-  }
 
-  Future<void> loadHeaderData() async {
-    final sp = await SharedPreferences.getInstance();
-    setState(() {
-      plantName = sp.getString("PLANT_NAME") ??
-          "BHAGESHWOR SUGAR & CHEMICAL INDUSTRIES PVT LTD";
-      selectedDate =
-          sp.getString("SELECTED_DATEVAR") ?? "";
+    /// ✅ Desktop / Web safe
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadAll();
     });
   }
 
-  TextStyle header =
-  const TextStyle(fontWeight: FontWeight.bold, fontSize: 15);
+  Future<void> _loadAll() async {
+    final sp = await SharedPreferences.getInstance();
 
-  TextStyle cell =
-  const TextStyle(fontSize: 14, color: Colors.black);
+    plantCode = sp.getString("PLANT_CODE") ?? "";
+    selectedDate = sp.getString("SELECTED_DATEVAR") ?? "";
 
-  Widget tableCell(String text,
+    await _loadPlantName();
+    await _loadReportData();
+
+    if (!mounted) return;
+    setState(() => loading = false);
+  }
+
+  /// 🏭 Plant Name from Plant API
+  Future<void> _loadPlantName() async {
+    if (plantCode.isEmpty) return;
+
+    try {
+      final plants = await ApiService.fetchPlants();
+      final plant = plants.firstWhere(
+            (e) => e.plantCode == plantCode,
+        orElse: () => PlantModel(
+          plantCode: plantCode,
+          plantName: "",
+        ),
+      );
+      plantName = plant.plantName;
+    } catch (e) {
+      debugPrint("Plant Load Error: $e");
+    }
+  }
+
+  /// 📊 Report APIs
+  Future<void> _loadReportData() async {
+    earlyToday =
+    await ApiService.fetchVarietyTotal("EVarSumPur.php", selectedDate);
+    generalToday =
+    await ApiService.fetchVarietyTotal("GVarSumPur.php", selectedDate);
+    rejectToday =
+    await ApiService.fetchVarietyTotal("RVarSumPur.php", selectedDate);
+    totalToday =
+    await ApiService.fetchVarietyTotal("SumVarietyPur.php", selectedDate);
+
+    earlyToDate =
+    await ApiService.fetchVarietyTotal("EVarSumToDatePur.php", selectedDate);
+    generalToDate =
+    await ApiService.fetchVarietyTotal("GVarSumToDatePur.php", selectedDate);
+    rejectToDate =
+    await ApiService.fetchVarietyTotal("RVarSumToDatePur.php", selectedDate);
+    totalToDate =
+    await ApiService.fetchVarietyTotal("SumToDateVarietyPur.php", selectedDate);
+  }
+
+  String percent(double v, double t) =>
+      t == 0 ? "0.00" : ((v * 100) / t).toStringAsFixed(2);
+
+  Widget cell(String text,
       {bool bold = false, Alignment align = Alignment.center}) {
     return Padding(
       padding: const EdgeInsets.all(6),
@@ -45,9 +105,8 @@ class _VarietyWiseReportScreenState
         child: Text(
           text,
           style: TextStyle(
-            fontSize: bold ? 15 : 14,
-            fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-          ),
+              fontSize: bold ? 15 : 14,
+              fontWeight: bold ? FontWeight.bold : FontWeight.normal),
         ),
       ),
     );
@@ -56,145 +115,63 @@ class _VarietyWiseReportScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F8F8),
-      body: SafeArea(
+      body: loading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
         child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Container(
-              color: Colors.white,
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-
-                  /// 🏭 PLANT NAME
-                  Text(
-                    plantName,
-                    textAlign: TextAlign.center,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Text(plantName,
                     style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                        fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                const Text("VARIETY WISE CRUSHING REPORT",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                Text("DATE: $selectedDate"),
+                const Divider(thickness: 2),
 
-                  const SizedBox(height: 6),
+                Table(
+                  defaultColumnWidth:
+                  const IntrinsicColumnWidth(),
+                  border: TableBorder.all(color: Colors.grey),
+                  children: [
+                    _row("SN", "CODE", "NAME", "TODAY", "%", "TODATE", "%",
+                        header: true),
 
-                  /// 📊 TITLE
-                  const Text(
-                    "VARIETY WISE CRUSHING REPORT",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
+                    _row("1", "31", "EARLY",
+                        earlyToday, percent(earlyToday, totalToday),
+                        earlyToDate, percent(earlyToDate, totalToDate)),
 
-                  const SizedBox(height: 12),
+                    _row("2", "32", "GENERAL",
+                        generalToday, percent(generalToday, totalToday),
+                        generalToDate, percent(generalToDate, totalToDate)),
 
-                  /// 📅 DATE ROW
-                  Row(
-                    children: [
-                      Text(
-                        "DATE: $selectedDate",
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const Spacer(),
-                    ],
-                  ),
+                    _row("3", "33", "REJECT",
+                        rejectToday, percent(rejectToday, totalToday),
+                        rejectToDate, percent(rejectToDate, totalToDate)),
 
-                  const SizedBox(height: 8),
-                  const Divider(thickness: 2, color: Colors.black),
-
-                  /// 📋 TABLE
-                  Table(
-                    defaultColumnWidth:
-                    const IntrinsicColumnWidth(),
-                    border: const TableBorder(
-                      horizontalInside:
-                      BorderSide(color: Colors.grey),
-                    ),
-                    children: [
-
-                      /// HEADER
-                      TableRow(
-                        decoration: BoxDecoration(
-                            color: Colors.grey.shade300),
-                        children: [
-                          tableCell("SN", bold: true),
-                          tableCell("CODE", bold: true),
-                          tableCell("NAME", bold: true),
-                          tableCell("TODAY", bold: true),
-                          tableCell("%", bold: true),
-                          tableCell("TODATE", bold: true),
-                          tableCell("%", bold: true),
-                        ],
-                      ),
-
-                      /// EARLY
-                      TableRow(children: [
-                        tableCell("1"),
-                        tableCell("31"),
-                        tableCell("EARLY",
-                            align: Alignment.centerLeft),
-                        tableCell("0"),
-                        tableCell("0"),
-                        tableCell("0"),
-                        tableCell("0"),
-                      ]),
-
-                      /// GENERAL
-                      TableRow(children: [
-                        tableCell("2"),
-                        tableCell("32"),
-                        tableCell("GENERAL",
-                            align: Alignment.centerLeft),
-                        tableCell("0"),
-                        tableCell("0"),
-                        tableCell("0"),
-                        tableCell("0"),
-                      ]),
-
-                      /// REJECT
-                      TableRow(children: [
-                        tableCell("3"),
-                        tableCell("33"),
-                        tableCell("REJECT",
-                            align: Alignment.centerLeft),
-                        tableCell("0"),
-                        tableCell("0"),
-                        tableCell("0"),
-                        tableCell("0"),
-                      ]),
-
-                      /// TOTAL
-                      TableRow(
-                        decoration: BoxDecoration(
-                            color: Colors.grey.shade200),
-                        children: [
-                          tableCell("TOTAL",
-                              bold: true, align: Alignment.centerLeft),
-                          tableCell(""),
-                          tableCell(""),
-                          tableCell("0", bold: true),
-                          tableCell(""),
-                          tableCell("0", bold: true),
-                          tableCell(""),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                    _row("TOTAL", "", "",
+                        totalToday, "", totalToDate, "",
+                        header: true),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  TableRow _row(a, b, c, d, e, f, g, {bool header = false}) {
+    final style =
+    TextStyle(fontWeight: header ? FontWeight.bold : FontWeight.normal);
+    Widget w(x) =>
+        Padding(padding: const EdgeInsets.all(6), child: Text("$x", style: style));
+
+    return TableRow(children: [w(a), w(b), w(c), w(d), w(e), w(f), w(g)]);
   }
 }

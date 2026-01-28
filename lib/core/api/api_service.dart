@@ -792,6 +792,44 @@ class ApiService {
 
 
 
+  static Future<double> fetchVarietyTotal(
+      String endpoint,
+      String selectedDate,
+      ) async {
+    final sp = await SharedPreferences.getInstance();
+    final plantCode = sp.getString("PLANT_CODE");
+
+    if (plantCode == null) {
+      throw Exception("Plant code not found");
+    }
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + endpoint),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+        "selectedDate": selectedDate, // dd-MM-yyyy
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+
+    if (jsonData['success'] == 1) {
+      return (jsonData['total'] ?? 0).toDouble();
+    } else {
+      throw Exception(jsonData['message']);
+    }
+  }
+
+
+
+
 
 
 }
