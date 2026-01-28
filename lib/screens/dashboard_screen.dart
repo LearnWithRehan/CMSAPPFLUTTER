@@ -1,4 +1,5 @@
 import 'package:canemanagementsystem/screens/show_yard_data_screen.dart';
+import 'package:canemanagementsystem/screens/variety_wise_date_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api/api_service.dart';
@@ -161,7 +162,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_VARIETY))
-                          dashboardItem("VarietyWise", Icons.agriculture),
+                          dashboardItem("VarietyWise", Icons.agriculture, (){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const VarietyWiseDateScreen(),
+                              ),
+                            );
+                          }),
 
                         if (isAllowed(P_PAYMENT))
                           dashboardItem("CentreWise Total", Icons.summarize),
