@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/api/api_service.dart';
 import '../core/api/storage/app_storage.dart';
+import '../models/plant_model.dart';
 import '../models/purchase_model.dart';
 
 class GrowerLedgerDetailsScreen extends StatefulWidget {
-  /// example: "111/25"
-  final String villageGrower;
+  final String villageGrower; // example: "111/25"
 
   const GrowerLedgerDetailsScreen({
     super.key,
@@ -21,7 +22,6 @@ class GrowerLedgerDetailsScreen extends StatefulWidget {
 
 class _GrowerLedgerDetailsScreenState
     extends State<GrowerLedgerDetailsScreen> {
-
   bool loading = true;
 
   String plantCode = "";
@@ -48,8 +48,6 @@ class _GrowerLedgerDetailsScreenState
     _init();
   }
 
-  // ================= INIT =================
-
   Future<void> _init() async {
     final parts = widget.villageGrower.split('/');
     gVill = parts[0];
@@ -59,6 +57,10 @@ class _GrowerLedgerDetailsScreenState
 
     if (plantCode.isEmpty) {
       debugPrint("❌ PlantCode not found");
+      setState(() {
+        loading = false;
+        plantName = "Plant Code Not Found";
+      });
       return;
     }
 
@@ -68,28 +70,50 @@ class _GrowerLedgerDetailsScreenState
   Future<void> loadAll() async {
     setState(() => loading = true);
 
-    await Future.wait([
-      fetchPlantName(),
-      fetchGrowerName(),
-      fetchFatherName(),
-      fetchPurchaseDetails(),
-      fetchSummary(),
-    ]);
-
-    if (mounted) {
-      setState(() => loading = false);
+    try {
+      await Future.wait([
+        fetchPlantName(),
+        fetchGrowerName(),
+        fetchFatherName(),
+        fetchPurchaseDetails(),
+        fetchSummary(),
+      ]);
+    } catch (_) {
+      debugPrint("❌ Error fetching data");
     }
+
+    if (mounted) setState(() => loading = false);
   }
 
   // ================= API CALLS =================
 
   Future<void> fetchPlantName() async {
-    final res = await ApiService.post("getPlantName.php", {
-      "plantCode": plantCode,
-    });
+    final sp = await SharedPreferences.getInstance();
+    plantCode = sp.getString("PLANT_CODE") ?? "";
 
-    if (res["success"] == 1) {
-      plantName = res["plant_name"] ?? "";
+    if (plantCode.isEmpty) return;
+
+    try {
+      final plants = await ApiService.fetchPlants();
+      final plant = plants.firstWhere(
+            (e) => e.plantCode == plantCode,
+        orElse: () => PlantModel(
+          plantCode: plantCode,
+          plantName: "Unknown Plant",
+        ),
+      );
+
+      if (mounted) {
+        setState(() {
+          plantName = plant.plantName;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          plantName = "Server Error";
+        });
+      }
     }
   }
 
@@ -101,7 +125,9 @@ class _GrowerLedgerDetailsScreenState
     });
 
     if (res["success"] == 1) {
-      growerName = res["growerName"] ?? "";
+      setState(() {
+        growerName = res["growerName"] ?? "";
+      });
     }
   }
 
@@ -113,11 +139,12 @@ class _GrowerLedgerDetailsScreenState
     });
 
     if (res["success"] == 1) {
-      fatherName = res["growerName"] ?? "";
+      setState(() {
+        fatherName = res["growerName"] ?? "";
+      });
     }
   }
 
-  /// 🔥 MAIN FIXED API CALL (अब data आएगा)
   Future<void> fetchPurchaseDetails() async {
     final res = await ApiService.post("getGrowerDetails.php", {
       "plantCode": plantCode,
@@ -126,11 +153,15 @@ class _GrowerLedgerDetailsScreenState
     });
 
     if (res["success"] == 1) {
-      purchases = (res["purchaseDetails"] as List)
-          .map((e) => PurchaseModel.fromJson(e))
-          .toList();
+      setState(() {
+        purchases = (res["purchaseDetails"] as List)
+            .map((e) => PurchaseModel.fromJson(e))
+            .toList();
+      });
     } else {
-      purchases = [];
+      setState(() {
+        purchases = [];
+      });
     }
   }
 
@@ -143,14 +174,16 @@ class _GrowerLedgerDetailsScreenState
 
     if (res["success"] == 1) {
       final s = res["summary"];
-      totalWeight = s["TOTAL_WEIGHT"].toString();
-      totalAmount = s["TOTAL_AMOUNT"].toString();
-      totalDeduction = s["TOTAL_DEDUCTION"].toString();
-      netAmount = s["TOTAL_NETAMOUNT"].toString();
+      setState(() {
+        totalWeight = s["TOTAL_WEIGHT"].toString();
+        totalAmount = s["TOTAL_AMOUNT"].toString();
+        totalDeduction = s["TOTAL_DEDUCTION"].toString();
+        netAmount = s["TOTAL_NETAMOUNT"].toString();
+      });
     }
   }
 
-  // ================= TABLE =================
+  // ================= TABLE CELLS =================
 
   Widget cell(String text, double width, {bool bold = false}) {
     return SizedBox(
@@ -167,23 +200,44 @@ class _GrowerLedgerDetailsScreenState
   }
 
   Widget tableHeader() {
-    return Container(
-      color: Colors.grey.shade300,
-      padding: const EdgeInsets.all(6),
-      child: Row(children: [
-        cell("SN", 40, bold: true),
-        cell("PNUM", 80, bold: true),
-        cell("ADV", 60, bold: true),
-        cell("DATE", 90, bold: true),
-        cell("VAR", 60, bold: true),
-        cell("WT", 60, bold: true),
-        cell("RATE", 60, bold: true),
-        cell("AMT", 70, bold: true),
-        cell("PAYDT", 90, bold: true),
-        cell("DED", 60, bold: true),
-        cell("NET", 70, bold: true),
-        cell("STATUS", 80, bold: true),
-      ]),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ===== Add Grower Purchase Details Title =====
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          color: Colors.grey.shade200,
+          child: const Center(
+            child: Text(
+              "GROWER PURCHASE DETAILS",
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87),
+            ),
+          ),
+        ),
+        // Table header row
+        Container(
+          color: Colors.grey.shade300,
+          padding: const EdgeInsets.all(6),
+          child: Row(children: [
+            cell("SN", 40, bold: true),
+            cell("PNUM", 80, bold: true),
+            cell("ADV", 60, bold: true),
+            cell("DATE", 90, bold: true),
+            cell("VAR", 60, bold: true),
+            cell("WT", 60, bold: true),
+            cell("RATE", 60, bold: true),
+            cell("AMT", 70, bold: true),
+            cell("PAYDT", 90, bold: true),
+            cell("DED", 60, bold: true),
+            cell("NET", 70, bold: true),
+            cell("STATUS", 80, bold: true),
+          ]),
+        ),
+      ],
     );
   }
 
@@ -215,65 +269,91 @@ class _GrowerLedgerDetailsScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Grower Ledger Details")),
+      appBar: AppBar(
+        title: const Text("Grower Ledger Details"),
+        backgroundColor: const Color(0xFF2C4D76),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-
-            Center(
-              child: Text(
-                plantName,
-                style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            Text("Grower Code : $gVill/$gNo",
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.blue)),
-            Text("Grower Name : $growerName",
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-            Text("Father Name : $fatherName",
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-
-            const Divider(thickness: 2),
-
-            /// ===== TABLE =====
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Column(
-                children: [
-                  tableHeader(),
-                  ...List.generate(
-                    purchases.length,
-                        (i) => tableRow(purchases[i], i),
+          : Column(
+        children: [
+          // ===== HEADER INFO =====
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ✅ PLANT NAME TOP CENTER
+                Center(
+                  child: Text(
+                    plantName.isEmpty ? "Loading..." : plantName,
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                ],
+                ),
+                const SizedBox(height: 8),
+                Text("Grower Code : $gVill/$gNo",
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.blue)),
+                Text("Grower Name : $growerName",
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text("Father Name : $fatherName",
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                const Divider(thickness: 2),
+              ],
+            ),
+          ),
+
+          // ===== TABLE =====
+          Expanded(
+            child: Scrollbar(
+              thumbVisibility: true,
+              trackVisibility: true,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: 900, // Table width
+                  child: ListView.builder(
+                    itemCount: purchases.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == 0) return tableHeader();
+                      return tableRow(purchases[index - 1], index - 1);
+                    },
+                  ),
+                ),
               ),
             ),
+          ),
 
-            const Divider(thickness: 2),
-
-            Text("TOTAL Weight : $totalWeight",
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.blue)),
-            Text("TOTAL Amount : $totalAmount",
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.green)),
-            Text("TOTAL Deduction : $totalDeduction",
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.red)),
-            Text("TOTAL PAID AMT : $netAmount",
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.orange)),
-          ],
-        ),
+          // ===== TOTALS =====
+          Container(
+            color: Colors.grey.shade100,
+            padding: const EdgeInsets.symmetric(
+                vertical: 10, horizontal: 12),
+            child: Wrap(
+              spacing: 20,
+              runSpacing: 6,
+              children: [
+                Text("TOTAL Weight : $totalWeight",
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.blue)),
+                Text("TOTAL Amount : $totalAmount",
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.green)),
+                Text("TOTAL Deduction : $totalDeduction",
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.red)),
+                Text("TOTAL PAID AMT : $netAmount",
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.orange)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

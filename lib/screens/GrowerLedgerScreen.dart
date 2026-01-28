@@ -25,8 +25,6 @@ class _GrowerLedgerScreenState extends State<GrowerLedgerScreen> {
     _loadPlant();
   }
 
-  // ================= LOAD PLANT =================
-
   Future<void> _loadPlant() async {
     final sp = await SharedPreferences.getInstance();
     plantCode = sp.getString("PLANT_CODE") ?? "";
@@ -57,8 +55,6 @@ class _GrowerLedgerScreenState extends State<GrowerLedgerScreen> {
     }
   }
 
-  // ================= SHOW BUTTON =================
-
   void _onShow() {
     final village = villageController.text.trim();
     final grower = growerController.text.trim();
@@ -78,22 +74,27 @@ class _GrowerLedgerScreenState extends State<GrowerLedgerScreen> {
       return;
     }
 
-    /// ✅ NEW NAVIGATION (ONLY ONE PARAM)
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => GrowerLedgerDetailsScreen(
-          villageGrower: "$village/$grower", // 👈 "111/25"
+          villageGrower: "$village/$grower",
         ),
       ),
     );
   }
 
-  // ================= UI =================
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Grower Ledger"),
+        backgroundColor: const Color(0xFF2C4D76),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -105,71 +106,89 @@ class _GrowerLedgerScreenState extends State<GrowerLedgerScreen> {
           ),
         ),
         child: Center(
-          child: Container(
-            margin: const EdgeInsets.all(24),
-            padding: const EdgeInsets.all(22),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(18),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: 500, // ✅ Max width for desktop/tablet
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                /// 🏭 PLANT NAME
-                Text(
-                  plantName.isEmpty ? "Loading..." : plantName,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.95),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    )
+                  ],
                 ),
-
-                const SizedBox(height: 10),
-                const Divider(color: Colors.white, thickness: 1),
-                const SizedBox(height: 20),
-
-                /// 📄 TITLE
-                const Text(
-                  "GROWER PAID / UNPAID DETAILS",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-
-                const SizedBox(height: 30),
-
-                _rowField("VILLAGE", villageController),
-                const SizedBox(height: 18),
-                _rowField("GROWER", growerController),
-
-                const SizedBox(height: 32),
-
-                /// ▶️ BUTTON
-                ElevatedButton(
-                  onPressed: _onShow,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    /// 🏭 PLANT NAME
+                    Text(
+                      plantName.isEmpty ? "Loading..." : plantName,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2C4D76),
+                      ),
                     ),
-                  ),
-                  child: const Text(
-                    "SHOW",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
+
+                    const SizedBox(height: 10),
+                    const Divider(color: Colors.grey, thickness: 1),
+                    const SizedBox(height: 20),
+
+                    /// 📄 TITLE
+                    const Text(
+                      "GROWER PAID / UNPAID DETAILS",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
                     ),
-                  ),
+
+                    const SizedBox(height: 30),
+
+                    _rowField("VILLAGE", villageController),
+                    const SizedBox(height: 20),
+                    _rowField("GROWER", growerController),
+
+                    const SizedBox(height: 32),
+
+                    /// ▶️ BUTTON
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _onShow,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2C4D76),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 5,
+                        ),
+                        child: const Text(
+                          "SHOW",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -177,32 +196,33 @@ class _GrowerLedgerScreenState extends State<GrowerLedgerScreen> {
     );
   }
 
-  // ================= INPUT ROW =================
-
   Widget _rowField(String label, TextEditingController controller) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          width: 110,
-          child: Text(
-            label,
-            style: const TextStyle(color: Colors.white, fontSize: 15),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.black87,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
           ),
         ),
-        Expanded(
-          child: Container(
-            height: 45,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: TextField(
-              controller: controller,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-              ),
+        const SizedBox(height: 6),
+        Container(
+          height: 48,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              hintText: "Enter here",
             ),
           ),
         ),
