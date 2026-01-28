@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api/api_service.dart';
 import '../models/plant_model.dart';
 import 'centre_wise_report_screen.dart';
+import 'dashboard_screen.dart';
 
 
 class CentreWiseDateScreen extends StatefulWidget {
@@ -26,6 +27,16 @@ class _CentreWiseDateScreenState extends State<CentreWiseDateScreen> {
     selectedDate = DateTime.now();
     loadPlantName();
   }
+
+  /// 🔙 GO TO DASHBOARD (COMMON)
+  void _goToDashboard() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const DashboardScreen()),
+          (route) => false,
+    );
+  }
+
 
   /// 🔹 Load Plant Name
   Future<void> loadPlantName() async {
@@ -90,8 +101,24 @@ class _CentreWiseDateScreenState extends State<CentreWiseDateScreen> {
     final width = MediaQuery.of(context).size.width;
     final isWeb = width > 600;
 
-    return Scaffold(
+    return WillPopScope(
+        onWillPop: () async {
+          _goToDashboard();
+          return false; // ❗ app close hone se rokta hai
+        },
+
+    child:  Scaffold(
       backgroundColor: const Color(0xFFF4F6FA),
+      /// 🔝 APP BAR WITH BACK
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF2C4D76),
+        title: const Text("Centre Wise Date Screen"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: _goToDashboard,
+        ),
+      ),
+
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -222,6 +249,7 @@ class _CentreWiseDateScreenState extends State<CentreWiseDateScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 }

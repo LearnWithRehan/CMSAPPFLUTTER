@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/api/api_service.dart';
+import 'dashboard_screen.dart';
 import 'hourly_crushing_report_screen.dart';
 import 'hourly_report_two_to_two_screen.dart';
 import '../models/plant_model.dart';
@@ -28,7 +29,16 @@ class _HourlyCrushingDateScreenState extends State<HourlyCrushingDateScreen> {
     loadPlantName();
   }
 
-  /// 🔹 Load Plant Name using Plant Code
+  /// 🔙 GO TO DASHBOARD (COMMON)
+  void _goToDashboard() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const DashboardScreen()),
+          (route) => false,
+    );
+  }
+
+  /// 🏭 Load Plant Name
   Future<void> loadPlantName() async {
     final sp = await SharedPreferences.getInstance();
     plantCode = sp.getString("PLANT_CODE") ?? "";
@@ -73,7 +83,7 @@ class _HourlyCrushingDateScreenState extends State<HourlyCrushingDateScreen> {
     }
   }
 
-  /// ▶️ Process Button
+  /// ▶️ PROCESS
   Future<void> onProcess() async {
     final sp = await SharedPreferences.getInstance();
     await sp.setString("SELECTED_DATEHOURLY", formattedDate);
@@ -100,134 +110,124 @@ class _HourlyCrushingDateScreenState extends State<HourlyCrushingDateScreen> {
     final width = MediaQuery.of(context).size.width;
     final isWeb = width > 600;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FA),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
+    return WillPopScope(
+      onWillPop: () async {
+        _goToDashboard();
+        return false; // ❗ app close hone se rokta hai
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF4F6FA),
 
-                  /// 🔷 HEADER
-                  Card(
-                    elevation: 8,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(22),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
+        /// 🔝 APP BAR WITH BACK
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF2C4D76),
+          title: const Text("Hourly Crushing Report"),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: _goToDashboard,
+          ),
+        ),
 
-                          /// 🏭 PLANT NAME
-                          if (plantName.isNotEmpty)
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+
+                    /// 🔷 HEADER CARD
+                    Card(
+                      elevation: 8,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(22),
+                        child: Column(
+                          children: [
+
+                            if (plantName.isNotEmpty)
+                              Text(
+                                plantName,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: isWeb ? 20 : 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF2C4D76),
+                                ),
+                              ),
+
+                            const SizedBox(height: 6),
+
                             Text(
-                              plantName,
-                              textAlign: TextAlign.center,
+                              "Hourly Crushing Report",
                               style: TextStyle(
-                                fontSize: isWeb ? 20 : 18,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF2C4D76),
+                                fontSize: isWeb ? 26 : 22,
+                                fontStyle: FontStyle.italic,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
 
-                          const SizedBox(height: 6),
+                            const Divider(height: 30),
 
-                          /// 📊 REPORT TITLE
-                          Text(
-                            "Hourly Crushing Report",
-                            style: TextStyle(
-                              fontSize: isWeb ? 26 : 22,
-                              fontStyle: FontStyle.italic,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-
-                          const Divider(height: 30),
-
-                          /// LABEL
-                          const Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              "Select Date",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black54,
+                            const Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                "Select Date",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black54,
+                                ),
                               ),
                             ),
-                          ),
 
-                          const SizedBox(height: 10),
+                            const SizedBox(height: 10),
 
-                          /// DATE PICKER
-                          InkWell(
-                            onTap: pickDate,
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              height: 48,
-                              padding:
-                              const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.grey.shade400),
-                                color: Colors.white,
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(
-                                    Icons.calendar_today,
-                                    size: 20,
-                                    color: Colors.black54,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    formattedDate,
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ],
+                            InkWell(
+                              onTap: pickDate,
+                              child: Container(
+                                height: 48,
+                                padding:
+                                const EdgeInsets.symmetric(horizontal: 12),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                      color: Colors.grey.shade400),
+                                  color: Colors.white,
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.calendar_today, size: 20),
+                                    const SizedBox(width: 12),
+                                    Text(formattedDate),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 22),
-
-                  /// ▶️ PROCESS BUTTON
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: onProcess,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2C4D76),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 6,
-                      ),
-                      child: const Text(
-                        "PROCESS",
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          ],
                         ),
                       ),
                     ),
-                  ),
-                ],
+
+                    const SizedBox(height: 22),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: onProcess,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2C4D76),
+                        ),
+                        child: const Text("PROCESS"),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

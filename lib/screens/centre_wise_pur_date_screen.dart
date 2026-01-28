@@ -6,6 +6,7 @@ import '../core/api/api_service.dart';
 import '../models/plant_model.dart';
 import 'CenterWiseReportScreenKudiyaPurchase.dart';
 import 'CentreWiseReportPurchaseScreen.dart';
+import 'dashboard_screen.dart';
 
 
 class CentreWisePurDateScreen extends StatefulWidget {
@@ -26,6 +27,15 @@ class _CentreWisePurDateScreenState extends State<CentreWisePurDateScreen> {
   void initState() {
     super.initState();
     _loadPlant();
+  }
+
+  /// 🔙 GO TO DASHBOARD (COMMON)
+  void _goToDashboard() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const DashboardScreen()),
+          (route) => false,
+    );
   }
 
   /// 🏭 Load Plant Name & Code
@@ -101,9 +111,22 @@ class _CentreWisePurDateScreenState extends State<CentreWisePurDateScreen> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final isWeb = width > 600;
-
-    return Scaffold(
+    return WillPopScope(
+        onWillPop: () async {
+          _goToDashboard();
+          return false; // ❗ app close hone se rokta hai
+        },
+    child:  Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
+      /// 🔝 APP BAR WITH BACK
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF2C4D76),
+        title: const Text("Centre Wise Date Screen"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: _goToDashboard,
+        ),
+      ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -235,6 +258,7 @@ class _CentreWisePurDateScreenState extends State<CentreWisePurDateScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 }

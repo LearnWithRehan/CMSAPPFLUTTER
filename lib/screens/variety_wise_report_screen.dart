@@ -1,8 +1,10 @@
+import 'package:canemanagementsystem/screens/variety_wise_date_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/api/api_service.dart';
 import '../models/plant_model.dart';
+import 'dashboard_screen.dart';
 
 class VarietyWiseReportScreen extends StatefulWidget {
   const VarietyWiseReportScreen({super.key});
@@ -35,6 +37,14 @@ class _VarietyWiseReportScreenState extends State<VarietyWiseReportScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadAll();
     });
+  }
+  /// 🔙 GO TO DASHBOARD (COMMON)
+  void _goToDashboard() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const VarietyWiseDateScreen()),
+          (route) => false,
+    );
   }
 
   Future<void> _loadAll() async {
@@ -86,8 +96,22 @@ class _VarietyWiseReportScreenState extends State<VarietyWiseReportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+        onWillPop: () async {
+          _goToDashboard();
+          return false; // ❗ app close hone se rokta hai
+        },
+    child:  Scaffold(
       backgroundColor: const Color(0xffF4F6FA),
+      /// 🔝 APP BAR WITH BACK
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF2C4D76),
+        title: const Text("Back"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: _goToDashboard,
+        ),
+      ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : Column(
@@ -181,6 +205,7 @@ class _VarietyWiseReportScreenState extends State<VarietyWiseReportScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 
