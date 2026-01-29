@@ -32,6 +32,7 @@ import '../../models/hourly_row_model.dart';
 import '../../models/plant_model.dart';
 import '../../models/login_request.dart';
 import '../../models/login_response.dart';
+import '../../models/role_model.dart';
 import '../../models/trolley_count_in_donga_response.dart';
 import '../../models/trolley_count_in_yard_response.dart';
 import '../../models/trolley_count_purchy_qty_response.dart';
@@ -1315,6 +1316,80 @@ class ApiService {
       return res['message'];
     } else {
       throw Exception(res['message']);
+    }
+  }
+
+
+
+
+
+  static Future<int> getNextRoleId(String plantCode) async {
+    final res = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "get_next_role_id.php"),
+      body: {"plantCode": plantCode},
+    );
+
+    if (res.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final data = jsonDecode(res.body);
+
+    if (data['success'] == 1) {
+      return int.parse(data['next_role_id'].toString());
+    } else {
+      throw Exception(data['message']);
+    }
+  }
+
+
+
+  static Future<List<RoleModel>> getAllRoles(String plantCode) async {
+    final res = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "get_all_roles.php"),
+      body: {"plantCode": plantCode},
+    );
+
+    if (res.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final data = jsonDecode(res.body);
+
+    if (data['success'] == 1 && data['data'] != null) {
+      return (data['data'] as List)
+          .map((e) => RoleModel.fromJson(e))
+          .toList();
+    } else {
+      throw Exception(data['message']);
+    }
+  }
+
+
+  static Future<String> saveRoleMaster(
+      String plantCode,
+      String roleId,
+      String roleName,
+      ) async {
+    final res = await http.post(
+      Uri.parse(ApiConstants.baseUrl + "save_role_master.php"),
+      body: {
+        "plantCode": plantCode,
+        "role_id": roleId,
+        "role_name": roleName,
+      },
+    );
+
+    if (res.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final data = jsonDecode(res.body);
+
+    if (data['success'] == 1) {
+      return data['message'];
+    } else {
+      throw Exception(data['message']);
     }
   }
 

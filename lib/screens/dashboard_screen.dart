@@ -1,3 +1,4 @@
+import 'package:canemanagementsystem/screens/role_master_screen.dart';
 import 'package:canemanagementsystem/screens/screen_master_screen.dart';
 import 'package:canemanagementsystem/screens/show_yard_data_screen.dart';
 import 'package:canemanagementsystem/screens/variety_wise_date_screen.dart';
@@ -278,7 +279,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_ROLEMASTER))
-                          dashboardItem("Role Master", Icons.security, Colors.amber),
+                          dashboardItem("Role Master", Icons.security, Colors.amber, (){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const RoleMasterScreen(),
+                              ),
+                            );
+                          }),
                       ],
                     );
                   },
