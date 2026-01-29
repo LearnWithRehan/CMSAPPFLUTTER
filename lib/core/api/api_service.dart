@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:canemanagementsystem/core/api/storage/app_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -7,8 +8,10 @@ import '../../models/CntTruckCountInDongaResponse.dart';
 import '../../models/CntTruckCountInGrossResponse.dart';
 import '../../models/CntTruckCountInYardResponsePurchyNo.dart';
 import '../../models/CntTruckCountInYardResponsePurchyNoQty.dart';
+import '../../models/RoleItem.dart';
 import '../../models/TruckCountInYardResponsePurchyNo.dart';
 import '../../models/TruckCountInYardResponsePurchyNoQty.dart';
+import '../../models/UserItem.dart';
 import '../../models/cane_day_data.dart';
 import '../../models/cart_count_donga_response.dart';
 import '../../models/cart_count_purchy_qty_response.dart';
@@ -1015,6 +1018,107 @@ class ApiService {
       return [];
     }
   }
+
+  static Future<List<UserItem>> getUsers(String plantCode) async {
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + ApiConstants.getUsers),
+      body: {
+        "plantCode": plantCode,
+      },
+    );
+
+    debugPrint("GET USERS RESPONSE => ${response.body}");
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+
+    if (jsonData['success'] == 1 && jsonData['users'] != null) {
+      return (jsonData['users'] as List)
+          .map((e) => UserItem.fromJson(e))
+          .toList();
+    }
+    return [];
+  }
+
+
+  static Future<List<RoleItem>> getUserRoles(String plantCode) async {
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + ApiConstants.getUserRoles),
+      body: {
+        "plantCode": plantCode,
+      },
+    );
+
+    debugPrint("GET ROLES RESPONSE => ${response.body}");
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+
+    if (jsonData['success'] == 1 && jsonData['roles'] != null) {
+      return (jsonData['roles'] as List)
+          .map((e) => RoleItem.fromJson(e))
+          .toList();
+    }
+    return [];
+  }
+
+
+  static Future<String> createUser({
+    required String username,
+    required String password,
+    required int roleId,
+    required String plantCode,
+  }) async {
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + ApiConstants.createUser),
+      body: {
+        "username": username,
+        "password": password,
+        "role_id": roleId.toString(),
+        "plantCode": plantCode,
+      },
+    );
+
+    debugPrint("CREATE USER RESPONSE => ${response.body}");
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+    return jsonData['message'] ?? "Something went wrong";
+  }
+
+
+  static Future<String> deleteUser({
+    required String plantCode,
+    required String userId,
+    required int adminRole,
+  }) async {
+    final res = await post(
+      ApiConstants.deleteUser,
+      {
+        "plantCode": plantCode,
+        "userId": userId,
+        "adminRole": adminRole.toString(),
+      },
+    );
+
+    if (res['success'] == 1) {
+      return res['message']?.toString() ?? "User deleted successfully";
+    } else {
+      throw Exception(res['message']?.toString() ?? "Delete failed");
+    }
+  }
+
+
+
 
 
 

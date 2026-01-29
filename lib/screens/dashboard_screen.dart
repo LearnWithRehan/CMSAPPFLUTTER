@@ -10,6 +10,7 @@ import 'LoginScreen.dart';
 import 'centre_wise_date_screen.dart';
 import 'centre_wise_pur_date_screen.dart';
 import 'contractor_screen.dart';
+import 'create_user_screen.dart';
 import 'graph_design_screen.dart';
 import 'hourly_crushing_date_screen.dart';
 
@@ -227,7 +228,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_USER))
-                          dashboardItem("Create User", Icons.person_add),
+                          dashboardItem("Create User", Icons.person_add, (){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const CreateUserScreen(),
+                              ),
+                            );
+                          }),
 
                         if (isAllowed(P_WBCONTROL))
                           dashboardItem("WB Control", Icons.settings),
