@@ -1,3 +1,4 @@
+// (All your imports same — kuchh remove nahi kiya)
 import 'package:canemanagementsystem/screens/role_master_screen.dart';
 import 'package:canemanagementsystem/screens/screen_master_screen.dart';
 import 'package:canemanagementsystem/screens/show_yard_data_screen.dart';
@@ -8,6 +9,7 @@ import 'package:canemanagementsystem/screens/wb_range_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api/api_service.dart';
+import '../core/api/storage/app_storage.dart';
 import 'CENTREMILLGATEDATE_SCREEN.dart';
 import 'GrowerLedgerScreen.dart';
 import 'LoginScreen.dart';
@@ -17,6 +19,7 @@ import 'contractor_screen.dart';
 import 'create_user_screen.dart';
 import 'graph_design_screen.dart';
 import 'hourly_crushing_date_screen.dart';
+import 'dart:async';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -26,12 +29,15 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  /// ================= DATA =================
   String plantName = "";
   int userRole = 0;
   Set<String> permissions = {};
+  String greetingMessage = "";
+  String userName = ""; // ⭐ NEW
+  String currentDate = "";
+  String currentTime = "";
+  Timer? timer;
 
-  /// ================= PERMISSION KEYS =================
   static const String P_YARD = "YARD_POSITION";
   static const String P_HOURLY = "HOURLY_REPORT";
   static const String P_CENTRE = "CENTRE_WISE";
@@ -52,24 +58,72 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     loadData();
+    loadUserName();
+    startClock();
   }
 
-  /// ================= LOAD PREF + API =================
+  void startClock() {
+    updateDateTime();
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      updateDateTime();
+    });
+  }
+
+  void updateDateTime() {
+    final now = DateTime.now();
+
+    currentDate =
+    "${now.day.toString().padLeft(2, '0')}-${now.month.toString().padLeft(2, '0')}-${now.year}";
+
+    currentTime =
+    "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
+
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
+
+  void loadUserName() async {
+    userName = await Prefs.getUserName();
+    setState(() {});
+  }
+
+  /// 🌤 Greeting with Name
+  void setGreeting() {
+    final hour = DateTime.now().hour;
+    String baseGreeting;
+
+    if (hour < 12) {
+      baseGreeting = "Good Morning ☀";
+    } else if (hour < 17) {
+      baseGreeting = "Good Afternoon 🌤";
+    } else {
+      baseGreeting = "Good Evening 🌙";
+    }
+
+    greetingMessage =
+    userName.isNotEmpty ? "$baseGreeting, $userName" : baseGreeting;
+  }
+
   Future<void> loadData() async {
     final sp = await SharedPreferences.getInstance();
-
     userRole = sp.getInt("USER_ROLE") ?? 0;
     permissions = sp.getStringList("PERMISSIONS")?.toSet() ?? {};
+    userName = sp.getString("USER_NAME") ?? "Rehan"; // ⭐ change key if needed
 
     final plantCode = sp.getString("PLANT_CODE");
     if (plantCode != null) {
       plantName = await ApiService.fetchPlantNameByCode(plantCode);
     }
 
+    setGreeting(); // ⭐ greeting AFTER name load
     setState(() {});
   }
 
-  /// ================= PERMISSION CHECK =================
   bool isAllowed(String permission) {
     return userRole == 1 || permissions.contains(permission);
   }
@@ -90,11 +144,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         body: SafeArea(
           child: Column(
             children: [
+
               /// 🔷 HEADER
               Container(
                 margin: const EdgeInsets.fromLTRB(16, 16, 16, 10),
                 padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                width: double.infinity,
                 decoration: BoxDecoration(
                   color: const Color(0xFF2C4D76),
                   borderRadius: BorderRadius.circular(12),
@@ -106,25 +160,90 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     )
                   ],
                 ),
-                child: Text(
-                  plantName.isEmpty
-                      ? "Cane Management System"
-                      : plantName,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        plantName.isEmpty ? "Cane Management System" : plantName,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () async {
+                        final sp = await SharedPreferences.getInstance();
+                        await sp.clear();
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (_) => const LoginScreen()),
+                              (route) => false,
+                        );
+                      },
+                      child: const Icon(Icons.logout, color: Colors.white),
+                    )
+                  ],
+                ),
+              ),
+
+              /// 👋 Greeting with Name + Date & Time
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      greetingMessage,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(currentDate,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                            )),
+                        Text(currentTime,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            )),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              /// 🎖 Role Badge
+              Padding(
+                padding: const EdgeInsets.only(left: 18, top: 4, bottom: 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Chip(
+                    label: Text(userRole == 1 ? "ADMIN" : "USER"),
+                    backgroundColor:
+                    userRole == 1 ? Colors.red : Colors.blue,
+                    labelStyle: const TextStyle(color: Colors.white),
                   ),
                 ),
               ),
 
-              /// 🔲 RESPONSIVE GRID
+              Container(height: 1, margin: const EdgeInsets.symmetric(horizontal: 16), color: Colors.black12),
+
+              /// 🔲 GRID (same)
               Expanded(
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     double width = constraints.maxWidth;
-
                     int crossAxisCount = 2;
                     if (width > 600) crossAxisCount = 3;
                     if (width > 900) crossAxisCount = 4;
@@ -135,162 +254,79 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         crossAxisCount: crossAxisCount,
                         crossAxisSpacing: 12,
                         mainAxisSpacing: 12,
-                        childAspectRatio: 1.0, // smaller, compact cards
+                        childAspectRatio: 1.0,
                       ),
                       children: [
                         if (isAllowed(P_GRAPH))
                           dashboardItem("Inflow Analysis", Icons.bar_chart, Colors.orange, () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const GraphDesign_Screen(),
-                              ),
-                            );
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const GraphDesign_Screen()));
                           }),
-
                         if (isAllowed(P_YARD))
                           dashboardItem("Yard Position", Icons.warehouse, Colors.teal, () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ShowYardDataScreen(),
-                              ),
-                            );
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const ShowYardDataScreen()));
                           }),
-
                         if (isAllowed(P_HOURLY))
-                          dashboardItem("Hourly Report", Icons.schedule, Colors.purple, (){
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const HourlyCrushingDateScreen(),
-                              ),
-                            );
+                          dashboardItem("Hourly Report", Icons.schedule, Colors.purple, () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const HourlyCrushingDateScreen()));
                           }),
-
                         if (isAllowed(P_CENTRE))
-                          dashboardItem("CentreWise", Icons.location_city, Colors.blue, (){
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const CentreWiseDateScreen(),
-                              ),
-                            );
+                          dashboardItem("CentreWise", Icons.location_city, Colors.blue, () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const CentreWiseDateScreen()));
                           }),
-
                         if (isAllowed(P_VARIETY))
-                          dashboardItem("VarietyWise", Icons.agriculture, Colors.green, (){
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const VarietyWiseDateScreen(),
-                              ),
-                            );
+                          dashboardItem("VarietyWise", Icons.agriculture, Colors.green, () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const VarietyWiseDateScreen()));
                           }),
-
                         if (isAllowed(P_PAYMENT))
-                          dashboardItem("CentreWise Total", Icons.summarize, Colors.indigo, (){
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const CentreWisePurDateScreen(),
-                              ),
-                            );
+                          dashboardItem("CentreWise Total", Icons.summarize, Colors.indigo, () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const CentreWisePurDateScreen()));
                           }),
-
                         if (isAllowed(P_GROWER))
-                          dashboardItem("Grower Ledger", Icons.person, Colors.pink, (){
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const GrowerLedgerScreen(),
-                              ),
-                            );
+                          dashboardItem("Grower Ledger", Icons.person, Colors.pink, () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const GrowerLedgerScreen()));
                           }),
-
                         if (isAllowed(P_CONTRACTOR))
-                          dashboardItem("Transporter Details", Icons.local_shipping, Colors.brown, (){
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ContractorScreen(),
-                              ),
-                            );
+                          dashboardItem("Transporter Details", Icons.local_shipping, Colors.brown, () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const ContractorScreen()));
                           }),
-
                         if (isAllowed(P_CENTREMILL))
-                          dashboardItem("Centre & Mill Gate", Icons.factory, Colors.cyan, (){
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const CentreMillGateDateScreen(),
-                              ),
-                            );
+                          dashboardItem("Centre & Mill Gate", Icons.factory, Colors.cyan, () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const CentreMillGateDateScreen()));
                           }),
-
                         if (isAllowed(P_VILLAGE))
-                          dashboardItem("Village Purchase", Icons.location_on, Colors.deepOrange, (){
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const VillageWiseDateScreen(),
-                              ),
-                            );
+                          dashboardItem("Village Purchase", Icons.location_on, Colors.deepOrange, () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const VillageWiseDateScreen()));
                           }),
-
                         if (isAllowed(P_USER))
-                          dashboardItem("Create User", Icons.person_add, Colors.tealAccent, (){
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const CreateUserScreen(),
-                              ),
-                            );
+                          dashboardItem("Create User", Icons.person_add, Colors.tealAccent, () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateUserScreen()));
                           }),
-
                         if (isAllowed(P_WBCONTROL))
-                          dashboardItem("WB Control", Icons.settings, Colors.grey, (){
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const WbControlScreen(),
-                              ),
-                            );
+                          dashboardItem("WB Control", Icons.settings, Colors.grey, () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const WbControlScreen()));
                           }),
-
                         if (isAllowed(P_SCREENMASTER))
-                          dashboardItem("Screen Master", Icons.dashboard_customize, Colors.blueGrey, (){
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ScreenMasterScreen(),
-                              ),
-                            );
+                          dashboardItem("Screen Master", Icons.dashboard_customize, Colors.blueGrey, () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const ScreenMasterScreen()));
                           }),
-
                         if (isAllowed(P_WBRANGE))
-                          dashboardItem("WB Range", Icons.tune, Colors.deepPurple, (){
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const WbRangeScreen(),
-                              ),
-                            );
+                          dashboardItem("WB Range", Icons.tune, Colors.deepPurple, () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const WbRangeScreen()));
                           }),
-
                         if (isAllowed(P_ROLEMASTER))
-                          dashboardItem("Role Master", Icons.security, Colors.amber, (){
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const RoleMasterScreen(),
-                              ),
-                            );
+                          dashboardItem("Role Master", Icons.security, Colors.amber, () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const RoleMasterScreen()));
                           }),
                       ],
                     );
                   },
                 ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Text("Version 1.0.0",
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
               ),
             ],
           ),
@@ -299,12 +335,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  /// ================= DASHBOARD CARD =================
   Widget dashboardItem(String title, IconData icon, Color bgColor, [VoidCallback? onTap]) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           gradient: LinearGradient(

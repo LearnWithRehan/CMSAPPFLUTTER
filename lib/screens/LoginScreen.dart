@@ -255,6 +255,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 await Prefs.saveLogin(
                                   userId:
                                   response.user!.userId,
+                                  userName: usernameCtrl.text.trim(),
                                   role:
                                   response.user!.userRole,
                                   plantCode:
