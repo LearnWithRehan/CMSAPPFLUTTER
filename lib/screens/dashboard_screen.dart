@@ -1,3 +1,4 @@
+import 'package:canemanagementsystem/screens/screen_master_screen.dart';
 import 'package:canemanagementsystem/screens/show_yard_data_screen.dart';
 import 'package:canemanagementsystem/screens/variety_wise_date_screen.dart';
 import 'package:canemanagementsystem/screens/village_wise_date_screen.dart';
@@ -256,7 +257,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_SCREENMASTER))
-                          dashboardItem("Screen Master", Icons.dashboard_customize, Colors.blueGrey),
+                          dashboardItem("Screen Master", Icons.dashboard_customize, Colors.blueGrey, (){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ScreenMasterScreen(),
+                              ),
+                            );
+                          }),
 
                         if (isAllowed(P_WBRANGE))
                           dashboardItem("WB Range", Icons.tune, Colors.deepPurple),

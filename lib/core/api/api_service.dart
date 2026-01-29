@@ -9,6 +9,8 @@ import '../../models/CntTruckCountInGrossResponse.dart';
 import '../../models/CntTruckCountInYardResponsePurchyNo.dart';
 import '../../models/CntTruckCountInYardResponsePurchyNoQty.dart';
 import '../../models/RoleItem.dart';
+import '../../models/SavePermissionRequest.dart';
+import '../../models/ScreenMasterModel.dart';
 import '../../models/TruckCountInYardResponsePurchyNo.dart';
 import '../../models/TruckCountInYardResponsePurchyNoQty.dart';
 import '../../models/UserItem.dart';
@@ -1185,6 +1187,88 @@ class ApiService {
   }
 
 
+
+
+
+  static Future<List<RoleItem>> getUserRolesper() async {
+    final plantCode = await Prefs.getPlantCode();
+
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + ApiConstants.getUserRoles),
+      body: {
+        "plantCode": plantCode,
+      },
+    );
+
+    debugPrint("ROLE API => ${response.body}");
+
+    final data = json.decode(response.body);
+
+    if (data['success'] == 1 && data['roles'] != null) {
+      return (data['roles'] as List)
+          .map((e) => RoleItem.fromJson(e))
+          .toList();
+    }
+    return [];
+  }
+
+
+
+
+  static Future<List<ScreenMasterModel>> getScreenMaster(
+      String plantCode) async {
+
+    final res = await http.post(
+      Uri.parse("${ApiConstants.baseUrl}ScreenMaster.php"),
+      body: {"plantCode": plantCode},
+    );
+
+    debugPrint("SCREEN MASTER => ${res.body}");
+
+    final data = jsonDecode(res.body);
+
+    if (data['success'] == 1 && data['data'] != null) {
+      return (data['data'] as List)
+          .map((e) => ScreenMasterModel.fromJson(e))
+          .toList();
+    }
+    return [];
+  }
+
+
+  static Future<List<int>> getRoleScreenPermission(
+      String plantCode, String roleId) async {
+
+    final res = await http.post(
+      Uri.parse("${ApiConstants.baseUrl}GetRoleScreenPermission.php"),
+      body: {
+        "plantCode": plantCode,
+        "roleId": roleId,
+      },
+    );
+
+    debugPrint("ROLE PERMISSION => ${res.body}");
+
+    final data = jsonDecode(res.body);
+
+    if (data['success'] == 1 && data['data'] != null) {
+      return List<int>.from(data['data']);
+    }
+    return [];
+  }
+
+
+  static Future<String> savePermission(
+      SavePermissionRequest request) async {
+    final res = await http.post(
+      Uri.parse("${ApiConstants.baseUrl}SaveRoleScreenPermission.php"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(request.toJson()),
+    );
+
+    final data = jsonDecode(res.body);
+    return data['message'] ?? "Done";
+  }
 
 
 
