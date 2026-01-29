@@ -3,6 +3,7 @@ import 'package:canemanagementsystem/screens/variety_wise_date_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api/api_service.dart';
+import 'CENTREMILLGATEDATE_SCREEN.dart';
 import 'GrowerLedgerScreen.dart';
 import 'LoginScreen.dart';
 import 'centre_wise_date_screen.dart';
@@ -205,7 +206,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_CENTREMILL))
-                          dashboardItem("Centre & Mill Gate", Icons.factory),
+                          dashboardItem("Centre & Mill Gate", Icons.factory, (){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const CentreMillGateDateScreen(),
+                              ),
+                            );
+                          }),
 
                         if (isAllowed(P_VILLAGE))
                           dashboardItem("Village Purchase", Icons.location_on),

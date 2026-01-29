@@ -15,6 +15,7 @@ import '../../models/cart_count_purchy_qty_response.dart';
 import '../../models/cart_count_purchy_response.dart';
 import '../../models/cart_count_response.dart';
 import '../../models/centre_kudiya_purchase_model.dart';
+import '../../models/centre_mill_gate_model.dart';
 import '../../models/centre_purchase_model.dart';
 import '../../models/centre_response.dart';
 import '../../models/centre_wise_total_cane_model.dart';
@@ -963,6 +964,31 @@ class ApiService {
           .toList();
     } else {
       return [];
+    }
+  }
+
+
+  static Future<List<CentreMillGateModel>> fetchCentreMillGate({
+    required String plantCode,
+    required String date,
+  }) async {
+    final response = await http.post(
+      Uri.parse("${ApiConstants.baseUrl}CntMillGateReport.php"),
+      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+      body: {
+        "plantCode": plantCode,
+        "date": date,
+      },
+    );
+
+    final jsonData = json.decode(response.body);
+
+    if (jsonData["success"] == 1) {
+      return (jsonData["data"] as List)
+          .map((e) => CentreMillGateModel.fromJson(e))
+          .toList();
+    } else {
+      throw Exception(jsonData["message"]);
     }
   }
 
