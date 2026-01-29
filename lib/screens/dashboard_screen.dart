@@ -1,5 +1,6 @@
 import 'package:canemanagementsystem/screens/show_yard_data_screen.dart';
 import 'package:canemanagementsystem/screens/variety_wise_date_screen.dart';
+import 'package:canemanagementsystem/screens/village_wise_date_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api/api_service.dart';
@@ -200,7 +201,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => ContractorScreen(),
+                                builder: (_) => const ContractorScreen(),
                               ),
                             );
                           }),
@@ -216,7 +217,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_VILLAGE))
-                          dashboardItem("Village Purchase", Icons.location_on),
+                          dashboardItem("Village Purchase", Icons.location_on, (){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const VillageWiseDateScreen(),
+                              ),
+                            );
+                          }),
 
                         if (isAllowed(P_USER))
                           dashboardItem("Create User", Icons.person_add),

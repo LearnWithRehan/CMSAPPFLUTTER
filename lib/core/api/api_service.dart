@@ -34,6 +34,7 @@ import '../../models/trolley_count_purchy_response.dart';
 import '../../models/truck_count_donga_response.dart';
 import '../../models/truck_count_in_yard_response.dart';
 import '../../models/variety_day_data.dart';
+import '../../models/village_wise_model.dart';
 import '../constants/api_constants.dart';
 
 class ApiService {
@@ -991,6 +992,31 @@ class ApiService {
       throw Exception(jsonData["message"]);
     }
   }
+
+
+  static Future<List<VillageWiseItem>> fetchVillageWise(
+      String plantCode,
+      String date,
+      ) async {
+    final response = await http.post(
+      Uri.parse("${ApiConstants.baseUrl}VillageWisePurchase.php"),
+      body: {
+        "plantCode": plantCode,
+        "date": date,
+      },
+    );
+
+    final jsonData = json.decode(response.body);
+
+    if (jsonData['success'] == 1) {
+      final List list = jsonData['data'];
+      return list.map((e) => VillageWiseItem.fromJson(e)).toList();
+    } else {
+      return [];
+    }
+  }
+
+
 
 
 
