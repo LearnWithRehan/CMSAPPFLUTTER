@@ -3,6 +3,7 @@ import 'package:canemanagementsystem/screens/show_yard_data_screen.dart';
 import 'package:canemanagementsystem/screens/variety_wise_date_screen.dart';
 import 'package:canemanagementsystem/screens/village_wise_date_screen.dart';
 import 'package:canemanagementsystem/screens/wb_control_screen.dart';
+import 'package:canemanagementsystem/screens/wb_range_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api/api_service.dart';
@@ -267,7 +268,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_WBRANGE))
-                          dashboardItem("WB Range", Icons.tune, Colors.deepPurple),
+                          dashboardItem("WB Range", Icons.tune, Colors.deepPurple, (){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const WbRangeScreen(),
+                              ),
+                            );
+                          }),
 
                         if (isAllowed(P_ROLEMASTER))
                           dashboardItem("Role Master", Icons.security, Colors.amber),

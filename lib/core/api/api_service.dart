@@ -41,6 +41,7 @@ import '../../models/truck_count_in_yard_response.dart';
 import '../../models/variety_day_data.dart';
 import '../../models/village_wise_model.dart';
 import '../../models/wb_control_response.dart';
+import '../../models/wb_range_item.dart';
 import '../../models/wb_status_item.dart';
 import '../constants/api_constants.dart';
 
@@ -1277,6 +1278,43 @@ class ApiService {
       return data['message'] ?? "Saved";
     } else {
       return data['message'] ?? "Failed";
+    }
+  }
+
+
+  static Future<List<WbRangeItem>> getWbRange(String plantCode) async {
+    final res = await post(
+      "get_wb_range.php",
+      {"plantCode": plantCode},
+    );
+
+    if (res['success'] == 1) {
+      return (res['data'] as List)
+          .map((e) => WbRangeItem.fromJson(e))
+          .toList();
+    } else {
+      throw Exception(res['message']);
+    }
+  }
+
+  static Future<String> saveWbRange(
+      String plantCode,
+      List<WbRangeItem> list,
+      ) async {
+    final dataJson = list.map((e) => e.toJson()).toList();
+
+    final res = await post(
+      "save_wb_range.php",
+      {
+        "plantCode": plantCode,
+        "data": jsonEncode(dataJson),
+      },
+    );
+
+    if (res['success'] == 1) {
+      return res['message'];
+    } else {
+      throw Exception(res['message']);
     }
   }
 
