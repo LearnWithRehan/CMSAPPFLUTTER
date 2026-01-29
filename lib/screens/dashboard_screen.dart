@@ -1,6 +1,7 @@
 import 'package:canemanagementsystem/screens/show_yard_data_screen.dart';
 import 'package:canemanagementsystem/screens/variety_wise_date_screen.dart';
 import 'package:canemanagementsystem/screens/village_wise_date_screen.dart';
+import 'package:canemanagementsystem/screens/wb_control_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api/api_service.dart';
@@ -245,7 +246,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_WBCONTROL))
-                          dashboardItem("WB Control", Icons.settings, Colors.grey),
+                          dashboardItem("WB Control", Icons.settings, Colors.grey, (){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const WbControlScreen(),
+                              ),
+                            );
+                          }),
 
                         if (isAllowed(P_SCREENMASTER))
                           dashboardItem("Screen Master", Icons.dashboard_customize, Colors.blueGrey),

@@ -38,6 +38,8 @@ import '../../models/truck_count_donga_response.dart';
 import '../../models/truck_count_in_yard_response.dart';
 import '../../models/variety_day_data.dart';
 import '../../models/village_wise_model.dart';
+import '../../models/wb_control_response.dart';
+import '../../models/wb_status_item.dart';
 import '../constants/api_constants.dart';
 
 class ApiService {
@@ -1119,6 +1121,68 @@ class ApiService {
 
 
 
+
+
+
+  static Future<List<String>> getWbNoList(String plantCode) async {
+    final res = await http.post(
+      Uri.parse("${ApiConstants.baseUrl}get_wb_no.php"),
+      body: {"plantCode": plantCode},
+    );
+
+    final data = jsonDecode(res.body);
+    if (data['success'] == 1) {
+      return List<String>.from(data['data']);
+    }
+    return [];
+  }
+
+  static Future<List<WbStatusItem>> getWbStatusList(String plantCode) async {
+    final res = await http.post(
+      Uri.parse("${ApiConstants.baseUrl}wb_control.php"),
+      body: {"plantCode": plantCode},
+    );
+
+    final data = jsonDecode(res.body);
+    if (data['success'] == 1) {
+      return (data['data'] as List)
+          .map((e) => WbStatusItem.fromJson(e))
+          .toList();
+    }
+    return [];
+  }
+  static Future<WbControlData?> getWbControlDetails(
+      String plantCode, String wbNo) async {
+
+    final res = await http.post(
+      Uri.parse("${ApiConstants.baseUrl}get_wb_control_details.php"),
+      body: {
+        "plantCode": plantCode,
+        "wbNo": wbNo,
+      },
+    );
+
+    final data = jsonDecode(res.body);
+    if (data['success'] == 1) {
+      return WbControlData.fromJson(data['data']);
+    }
+    return null;
+  }
+  static Future<String> updateWbFlag(
+      String plantCode, String wbNo, String flag) async {
+
+    final res = await http.post(
+      Uri.parse("${ApiConstants.baseUrl}update_wb_flag.php"),
+      body: {
+        "plantCode": plantCode,
+        "wbNo": wbNo,
+        "wFlag": flag,
+      },
+    );
+
+    final data = jsonDecode(res.body);
+    return data['message'] ?? "Updated";
+  }
 
 
 
