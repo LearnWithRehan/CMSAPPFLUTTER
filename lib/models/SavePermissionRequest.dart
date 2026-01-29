@@ -5,11 +5,17 @@ class SavePermissionRequest {
   final String roleId;
   final List<ScreenPermissionModel> screens;
 
-  SavePermissionRequest(this.plantCode, this.roleId, this.screens);
+  SavePermissionRequest(
+      this.plantCode,
+      this.roleId,
+      this.screens,
+      );
 
-  Map<String, dynamic> toJson() => {
-    "plantCode": plantCode,
-    "roleId": roleId,
-    "screens": screens.map((e) => e.toJson()).toList(),
-  };
+  Map<String, dynamic> toJson() {
+    return {
+      "plantCode": plantCode,
+      "roleId": roleId,
+      "screens": screens.map((e) => e.toJson()).toList(),
+    };
+  }
 }

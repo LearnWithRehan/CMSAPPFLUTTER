@@ -4,8 +4,10 @@ class ScreenPermissionModel {
 
   ScreenPermissionModel(this.screenId, this.screenName);
 
-  Map<String, dynamic> toJson() => {
-    "screenId": screenId,
-    "screenName": screenName,
-  };
+  Map<String, dynamic> toJson() {
+    return {
+      "screenId": screenId,
+      "screenName": screenName,
+    };
+  }
 }

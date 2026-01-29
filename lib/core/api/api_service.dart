@@ -1260,15 +1260,26 @@ class ApiService {
 
   static Future<String> savePermission(
       SavePermissionRequest request) async {
+
     final res = await http.post(
       Uri.parse("${ApiConstants.baseUrl}SaveRoleScreenPermission.php"),
-      headers: {"Content-Type": "application/json"},
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: jsonEncode(request.toJson()),
     );
 
+    debugPrint("SAVE PERMISSION API => ${res.body}");
+
     final data = jsonDecode(res.body);
-    return data['message'] ?? "Done";
+
+    if (data['success'] == 1) {
+      return data['message'] ?? "Saved";
+    } else {
+      return data['message'] ?? "Failed";
+    }
   }
+
 
 
 

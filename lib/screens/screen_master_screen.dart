@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:canemanagementsystem/core/api/api_service.dart';
+import '../core/api/api_service.dart';
 import '../models/RoleItem.dart';
 import '../models/ScreenMasterModel.dart';
 import '../models/ScreenPermissionModel.dart';
@@ -16,8 +16,7 @@ class ScreenMasterScreen extends StatefulWidget {
 
 class _ScreenMasterScreenState extends State<ScreenMasterScreen> {
   String plantCode = "";
-  int? selectedRoleId;
-
+  RoleItem? selectedRole;
 
   List<RoleItem> roleList = [];
   List<ScreenMasterModel> screenList = [];
@@ -40,42 +39,44 @@ class _ScreenMasterScreenState extends State<ScreenMasterScreen> {
     setState(() {});
   }
 
-  /// 🔹 Load screens + permissions (ANDROID STYLE FLOW)
+  /// 🔹 Load screens + permissions
   Future<void> _loadScreens(String roleId) async {
     setState(() {
       isLoading = true;
       screenList.clear();
     });
 
-    // 1️⃣ Load all screens
-    final screens = await ApiService.getScreenMaster(plantCode);
+    try {
+      final screens = await ApiService.getScreenMaster(plantCode);
+      final allowedScreens =
+      await ApiService.getRoleScreenPermission(plantCode, roleId);
 
-    // 2️⃣ Load allowed screens for role
-    final allowedScreens =
-    await ApiService.getRoleScreenPermission(plantCode, roleId);
+      for (var s in screens) {
+        final id = int.tryParse(s.screenId);
+        s.isChecked = id != null && allowedScreens.contains(id);
+      }
 
-    // 3️⃣ Apply permission
-    for (var s in screens) {
-      final id = int.tryParse(s.screenId);
-      s.isChecked = id != null && allowedScreens.contains(id);
+      setState(() {
+        screenList = screens;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error loading screens: $e")),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
-
-    setState(() {
-      screenList = screens;
-      isLoading = false;
-    });
   }
 
   /// 🔹 Save permission
   Future<void> _savePermission() async {
+    if (selectedRole == null) return;
+
     final selectedScreens = screenList
         .where((e) => e.isChecked)
-        .map(
-          (e) => ScreenPermissionModel(
-        e.screenId,
-        e.screenName,
-      ),
-    )
+        .map((e) => ScreenPermissionModel(e.screenId, e.screenName))
         .toList();
 
     if (selectedScreens.isEmpty) {
@@ -85,16 +86,22 @@ class _ScreenMasterScreenState extends State<ScreenMasterScreen> {
       return;
     }
 
-    final msg = await ApiService.savePermission(
-      SavePermissionRequest(
-        plantCode,
-        selectedRoleId! as String,
-        selectedScreens,
-      ),
-    );
+    try {
+      final msg = await ApiService.savePermission(
+        SavePermissionRequest(
+          plantCode,
+          selectedRole!.roleId.toString(),
+          selectedScreens,
+        ),
+      );
 
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(msg)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(msg)));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error saving permissions: $e")),
+      );
+    }
   }
 
   @override
@@ -125,22 +132,22 @@ class _ScreenMasterScreenState extends State<ScreenMasterScreen> {
                       labelText: "Select Role",
                       border: OutlineInputBorder(),
                     ),
+                    value: selectedRole,
                     items: roleList
-                        .map(
-                          (role) => DropdownMenuItem<RoleItem>(
-                        value: role,
-                        child: Text(role.roleName),
-                      ),
-                    )
+                        .map((role) => DropdownMenuItem<RoleItem>(
+                      value: role,
+                      child: Text(role.roleName),
+                    ))
                         .toList(),
-                      onChanged: (role) {
-                        selectedRoleId = role?.roleId;
+                    onChanged: (role) {
+                      setState(() {
+                        selectedRole = role;
+                      });
 
-                        if (selectedRoleId != null) {
-                          _loadScreens(selectedRoleId!.toString());
-                        }
+                      if (role != null) {
+                        _loadScreens(role.roleId.toString());
                       }
-
+                    },
                   ),
 
                   const SizedBox(height: 16),
@@ -148,9 +155,7 @@ class _ScreenMasterScreenState extends State<ScreenMasterScreen> {
                   /// 📋 SCREEN LIST
                   Expanded(
                     child: isLoading
-                        ? const Center(
-                      child: CircularProgressIndicator(),
-                    )
+                        ? const Center(child: CircularProgressIndicator())
                         : screenList.isEmpty
                         ? const Center(
                       child: Text(
@@ -163,8 +168,7 @@ class _ScreenMasterScreenState extends State<ScreenMasterScreen> {
                       itemBuilder: (_, i) {
                         final item = screenList[i];
                         return Card(
-                          margin:
-                          const EdgeInsets.symmetric(vertical: 4),
+                          margin: const EdgeInsets.symmetric(vertical: 4),
                           child: CheckboxListTile(
                             title: Text(
                               "${item.screenName} (${item.screenId})",
@@ -197,7 +201,7 @@ class _ScreenMasterScreenState extends State<ScreenMasterScreen> {
                         ),
                       ),
                       onPressed:
-                      selectedRoleId == null ? null : _savePermission,
+                      selectedRole == null ? null : _savePermission,
                       child: const Text(
                         "Save Permissions",
                         style: TextStyle(
