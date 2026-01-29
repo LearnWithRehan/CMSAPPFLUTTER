@@ -82,7 +82,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return false;
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFAEBBDA),
+        backgroundColor: const Color(0xFFE8ECF4),
         body: SafeArea(
           child: Column(
             children: [
@@ -92,8 +92,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF608A88),
-                  borderRadius: BorderRadius.circular(10),
+                  color: const Color(0xFF2C4D76),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    )
+                  ],
                 ),
                 child: Text(
                   plantName.isEmpty
@@ -102,7 +109,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 15,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -124,11 +131,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         crossAxisCount: crossAxisCount,
                         crossAxisSpacing: 12,
                         mainAxisSpacing: 12,
-                        childAspectRatio: 1.2,
+                        childAspectRatio: 1.0, // smaller, compact cards
                       ),
                       children: [
                         if (isAllowed(P_GRAPH))
-                          dashboardItem("Inflow Analysis", Icons.bar_chart, () {
+                          dashboardItem("Inflow Analysis", Icons.bar_chart, Colors.orange, () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -138,7 +145,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_YARD))
-                          dashboardItem("Yard Position", Icons.warehouse, () {
+                          dashboardItem("Yard Position", Icons.warehouse, Colors.teal, () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -148,7 +155,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_HOURLY))
-                          dashboardItem("Hourly Report", Icons.schedule, (){
+                          dashboardItem("Hourly Report", Icons.schedule, Colors.purple, (){
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -158,7 +165,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_CENTRE))
-                          dashboardItem("CentreWise", Icons.location_city, (){
+                          dashboardItem("CentreWise", Icons.location_city, Colors.blue, (){
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -168,7 +175,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_VARIETY))
-                          dashboardItem("VarietyWise", Icons.agriculture, (){
+                          dashboardItem("VarietyWise", Icons.agriculture, Colors.green, (){
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -178,7 +185,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_PAYMENT))
-                          dashboardItem("CentreWise Total", Icons.summarize, (){
+                          dashboardItem("CentreWise Total", Icons.summarize, Colors.indigo, (){
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -188,7 +195,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_GROWER))
-                          dashboardItem("Grower Ledger", Icons.person, (){
+                          dashboardItem("Grower Ledger", Icons.person, Colors.pink, (){
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -198,7 +205,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_CONTRACTOR))
-                          dashboardItem("Transporter Details", Icons.local_shipping, (){
+                          dashboardItem("Transporter Details", Icons.local_shipping, Colors.brown, (){
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -208,7 +215,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_CENTREMILL))
-                          dashboardItem("Centre & Mill Gate", Icons.factory, (){
+                          dashboardItem("Centre & Mill Gate", Icons.factory, Colors.cyan, (){
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -218,7 +225,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_VILLAGE))
-                          dashboardItem("Village Purchase", Icons.location_on, (){
+                          dashboardItem("Village Purchase", Icons.location_on, Colors.deepOrange, (){
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -228,7 +235,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_USER))
-                          dashboardItem("Create User", Icons.person_add, (){
+                          dashboardItem("Create User", Icons.person_add, Colors.tealAccent, (){
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -238,16 +245,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }),
 
                         if (isAllowed(P_WBCONTROL))
-                          dashboardItem("WB Control", Icons.settings),
+                          dashboardItem("WB Control", Icons.settings, Colors.grey),
 
                         if (isAllowed(P_SCREENMASTER))
-                          dashboardItem("Screen Master", Icons.dashboard_customize),
+                          dashboardItem("Screen Master", Icons.dashboard_customize, Colors.blueGrey),
 
                         if (isAllowed(P_WBRANGE))
-                          dashboardItem("WB Range", Icons.tune),
+                          dashboardItem("WB Range", Icons.tune, Colors.deepPurple),
 
                         if (isAllowed(P_ROLEMASTER))
-                          dashboardItem("Role Master", Icons.security),
+                          dashboardItem("Role Master", Icons.security, Colors.amber),
                       ],
                     );
                   },
@@ -261,27 +268,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   /// ================= DASHBOARD CARD =================
-  Widget dashboardItem(String title, IconData icon, [VoidCallback? onTap]) {
+  Widget dashboardItem(String title, IconData icon, Color bgColor, [VoidCallback? onTap]) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: const [
+          gradient: LinearGradient(
+            colors: [bgColor.withOpacity(0.7), bgColor],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
             BoxShadow(
-              color: Colors.black26,
-              blurRadius: 4,
-              offset: Offset(0, 2),
-            ),
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            )
           ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 36, color: const Color(0xFF2C4D76)),
+            Icon(icon, size: 36, color: Colors.white),
             const SizedBox(height: 6),
             Text(
               title,
@@ -290,8 +301,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF2C4D76),
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
               ),
             ),
           ],
