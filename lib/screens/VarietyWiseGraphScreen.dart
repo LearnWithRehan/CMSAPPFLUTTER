@@ -29,8 +29,7 @@ class _VarietyWiseGraphScreenState extends State<VarietyWiseGraphScreen> {
       final sp = await SharedPreferences.getInstance();
       final plantCode = sp.getString("PLANT_CODE") ?? "0";
 
-      final data =
-      await ApiService.fetchDailyVarietyWise(plantCode);
+      final data = await ApiService.fetchDailyVarietyWise(plantCode);
 
       setState(() {
         list = data;
@@ -56,7 +55,6 @@ class _VarietyWiseGraphScreenState extends State<VarietyWiseGraphScreen> {
             : Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             const Text(
               "Variety Wise Details",
               style: TextStyle(
@@ -64,9 +62,7 @@ class _VarietyWiseGraphScreenState extends State<VarietyWiseGraphScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-
             const SizedBox(height: 8),
-
             Expanded(
               child: ListView.builder(
                 itemCount: list.length,

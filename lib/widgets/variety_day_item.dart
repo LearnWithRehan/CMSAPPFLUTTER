@@ -13,12 +13,9 @@ class VarietyDayItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final double total = item.early + item.general + item.reject;
 
-    final double earlyPer =
-    total == 0 ? 0.0 : (item.early * 100.0) / total;
-    final double generalPer =
-    total == 0 ? 0.0 : (item.general * 100.0) / total;
-    final double rejectPer =
-    total == 0 ? 0.0 : (item.reject * 100.0) / total;
+    final double earlyPer = total == 0 ? 0.0 : (item.early * 100.0) / total;
+    final double generalPer = total == 0 ? 0.0 : (item.general * 100.0) / total;
+    final double rejectPer = total == 0 ? 0.0 : (item.reject * 100.0) / total;
 
     final double maxY = _roundUp(total);
 
@@ -34,30 +31,20 @@ class VarietyDayItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            /// DATE
-            Text(
-              item.date,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Text(item.date,
+                style: const TextStyle(
+                    fontSize: 15, fontWeight: FontWeight.bold)),
 
             const SizedBox(height: 4),
 
-            /// TOTAL
-            Text(
-              "Total : ${f(total)}",
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Colors.black54,
-              ),
-            ),
+            Text("Total : ${f(total)}",
+                style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black54)),
 
             const SizedBox(height: 12),
 
-            /// GRAPH CONTAINER (Android look)
             Container(
               height: 230,
               padding: const EdgeInsets.symmetric(vertical: 14),
@@ -70,14 +57,33 @@ class VarietyDayItem extends StatelessWidget {
                   minY: 0,
                   maxY: maxY,
                   alignment: BarChartAlignment.spaceEvenly,
-                  barTouchData: BarTouchData(enabled: false),
+
+                  /// 🔥 TOOLTIP ENABLED
+                  barTouchData: BarTouchData(
+                    enabled: true,
+                    touchTooltipData: BarTouchTooltipData(
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        final value = rod.toY;
+                        final percent =
+                        total == 0 ? 0 : (value * 100) / total;
+
+                        return BarTooltipItem(
+                          '${value.toStringAsFixed(1)}\n(${percent.toStringAsFixed(1)}%)',
+                          const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
 
                   titlesData: FlTitlesData(
                     topTitles: const AxisTitles(
                         sideTitles: SideTitles(showTitles: false)),
                     rightTitles: const AxisTitles(
                         sideTitles: SideTitles(showTitles: false)),
-
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
@@ -89,7 +95,6 @@ class VarietyDayItem extends StatelessWidget {
                         ),
                       ),
                     ),
-
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
@@ -120,9 +125,9 @@ class VarietyDayItem extends StatelessWidget {
                   borderData: FlBorderData(show: false),
 
                   barGroups: [
-                    _bar(0, item.early, earlyPer, Colors.green),
-                    _bar(1, item.general, generalPer, Colors.blue),
-                    _bar(2, item.reject, rejectPer, Colors.red),
+                    _bar(0, item.early, Colors.green),
+                    _bar(1, item.general, Colors.blue),
+                    _bar(2, item.reject, Colors.red),
                   ],
                 ),
               ),
@@ -130,7 +135,6 @@ class VarietyDayItem extends StatelessWidget {
 
             const SizedBox(height: 10),
 
-            /// LEGEND
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: const [
@@ -147,33 +151,28 @@ class VarietyDayItem extends StatelessWidget {
     );
   }
 
-  /// BAR WITH VALUE + % TEXT
-  BarChartGroupData _bar(
-      int x, double value, double percent, Color color) {
+  /// 🔥 BAR WITH ALWAYS VISIBLE LABEL
+  BarChartGroupData _bar(int x, double value, Color color) {
     return BarChartGroupData(
       x: x,
-      barsSpace: 4,
+      showingTooltipIndicators: const [0],
       barRods: [
         BarChartRodData(
           toY: value,
           width: 35,
           color: color,
           borderRadius: BorderRadius.circular(6),
-          rodStackItems: [],
         ),
       ],
-      showingTooltipIndicators: const [],
     );
   }
 
-  /// AUTO Y AXIS ROUNDING
   double _roundUp(double value) {
     if (value <= 0) return 100;
     return (value / 1000).ceil() * 1000;
   }
 }
 
-/// LEGEND WIDGET
 class _Legend extends StatelessWidget {
   final Color color;
   final String text;
@@ -187,16 +186,10 @@ class _Legend extends StatelessWidget {
         Container(
           width: 10,
           height: 10,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
-        Text(
-          text,
-          style: const TextStyle(fontSize: 11),
-        ),
+        Text(text, style: const TextStyle(fontSize: 11)),
       ],
     );
   }
