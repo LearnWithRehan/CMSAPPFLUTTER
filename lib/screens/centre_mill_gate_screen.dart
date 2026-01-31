@@ -132,24 +132,73 @@ class _CentreMillGateScreenState extends State<CentreMillGateScreen> {
   }
 
   Widget _headerRow() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+
+        /// 🔷 GROUP TITLE ROW
+        Row(
+          children: [
+            const SizedBox(width: 50 + 60 + 160), // SN + Code + Centre Name
+            _groupHeader("TODAY", 90 + 90 + 90, Colors.blue.shade200),
+            _groupHeader("TODATE", 90 + 90 + 90, Colors.green.shade200),
+          ],
+        ),
+
+        /// 🔷 COLUMN HEADER ROW
+        Row(
+          children: [
+            _headerCell("SN", 50),
+            _headerCell("Code", 60),
+            _headerCell("Centre Name", 160),
+
+            _headerCell("MillGate", 90, Colors.blue.shade100),
+            _headerCell("Centre", 90, Colors.blue.shade100),
+            _headerCell("Total", 90, Colors.blue.shade100),
+
+            _headerCell("MillGate", 90, Colors.green.shade100),
+            _headerCell("Centre", 90, Colors.green.shade100),
+            _headerCell("Total", 90, Colors.green.shade100),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _groupHeader(String text, double width, Color bg) {
     return Container(
-      color: Colors.blue.shade50,
+      width: width,
       padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: const [
-          _H("SN", 50),
-          _H("Code", 60),
-          _H("Centre Name", 160),
-          _H("MillGate", 90),
-          _H("Centre", 90),
-          _H("Total", 90),
-          _H("MillGate", 90),
-          _H("Centre", 90),
-          _H("Total", 90),
-        ],
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: bg,
+        border: Border.all(color: Colors.white),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
       ),
     );
   }
+
+  Widget _headerCell(String text, double width, [Color? bg]) {
+    return Container(
+      width: width,
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: bg ?? Colors.blueGrey.shade100,
+        border: Border.all(color: Colors.white),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+      ),
+    );
+  }
+
+
+
 
   Widget _dataRow(int sn, CentreMillGateModel d) {
     return _row(
