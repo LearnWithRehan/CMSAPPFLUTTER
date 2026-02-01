@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api/api_service.dart';
 import '../core/api/storage/app_storage.dart';
+import '../widgets/ip_location_service.dart';
 import 'CENTREMILLGATEDATE_SCREEN.dart';
 import 'GrowerLedgerScreen.dart';
 import 'LoginScreen.dart';
@@ -29,6 +30,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  String locationText = "Fetching location..."; // ⭐ NEW
   String plantName = "";
   int userRole = 0;
   Set<String> permissions = {};
@@ -54,13 +56,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
   static const String P_VILLAGE = "VILLAGEWISE";
   static const String P_GRAPH = "GRAPHWISE";
 
+
+
   @override
   void initState() {
     super.initState();
     loadData();
     loadUserName();
     startClock();
+    loadIpLocation();
   }
+
+  Future<void> loadIpLocation() async {
+    try {
+      final loc = await IpLocationService.fetchLocation();
+
+      setState(() {
+        if (loc['city']!.isNotEmpty) {
+          locationText = "${loc['city']}, ${loc['country']}";
+        } else {
+          locationText = "Location not available";
+        }
+      });
+    } catch (e) {
+      setState(() {
+        locationText = "Location not available";
+      });
+    }
+  }
+
 
   void startClock() {
     updateDateTime();
@@ -190,18 +214,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
 
               /// 👋 Greeting with Name + Date & Time
+              /// 👋 Greeting with Name + Date & Time
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 18),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      greetingMessage,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade700,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          greetingMessage,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                            const SizedBox(width: 4),
+                            Text(
+                              locationText,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
@@ -222,6 +266,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ],
                 ),
               ),
+
 
               /// 🎖 Role Badge
               Padding(
