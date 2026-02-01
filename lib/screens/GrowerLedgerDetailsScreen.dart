@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/api/api_service.dart';
@@ -41,6 +44,96 @@ class _GrowerLedgerDetailsScreenState
 
   final String now =
   DateFormat('dd-MMM-yy   hh:mm:ss a').format(DateTime.now());
+
+
+  Future<void> generatePdf() async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4.landscape,
+        build: (context) => [
+          // ===== HEADER =====
+          pw.Center(
+            child: pw.Text(
+              plantName,
+              style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+            ),
+          ),
+          pw.SizedBox(height: 6),
+          pw.Text("Grower Code : $gVill/$gNo"),
+          pw.Text("Grower Name : $growerName"),
+          pw.Text("Father Name : $fatherName"),
+          pw.Text("Generated On : $now"),
+          pw.Divider(),
+
+          // ===== TABLE =====
+          pw.Table.fromTextArray(
+            headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+            headerDecoration:
+            pw.BoxDecoration(color: PdfColors.grey300),
+            cellAlignment: pw.Alignment.centerLeft,
+            headers: [
+              "SN",
+              "PNUM",
+              "ADV",
+              "DATE",
+              "VAR",
+              "WT",
+              "RATE",
+              "AMT",
+              "PAYDT",
+              "DED",
+              "NET",
+              "STATUS",
+            ],
+            data: List.generate(purchases.length, (i) {
+              final p = purchases[i];
+              return [
+                "${i + 1}",
+                p.pnum,
+                p.adv,
+                p.purDate,
+                p.variety,
+                p.weight,
+                p.rate,
+                p.amount,
+                p.payDate,
+                p.deduction,
+                p.netAmount,
+                p.status,
+              ];
+            }),
+          ),
+
+          pw.SizedBox(height: 12),
+
+          // ===== TOTAL SUMMARY =====
+          pw.Container(
+            padding: const pw.EdgeInsets.all(8),
+            decoration:
+            pw.BoxDecoration(border: pw.Border.all()),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text("TOTAL Weight : $totalWeight"),
+                pw.Text("TOTAL Amount : $totalAmount"),
+                pw.Text("TOTAL Deduction : $totalDeduction"),
+                pw.Text("TOTAL Paid Amount : $netAmount"),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+    );
+  }
+
+
+
 
   @override
   void initState() {
@@ -276,6 +369,13 @@ class _GrowerLedgerDetailsScreenState
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf,color: Colors.white),
+            tooltip: "Export PDF",
+            onPressed: generatePdf,
+          ),
+        ],
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
