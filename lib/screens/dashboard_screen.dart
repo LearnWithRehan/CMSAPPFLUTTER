@@ -14,6 +14,7 @@ import '../widgets/ip_location_service.dart';
 import 'CENTREMILLGATEDATE_SCREEN.dart';
 import 'GrowerLedgerScreen.dart';
 import 'LoginScreen.dart';
+import 'calendar_screen.dart';
 import 'centre_wise_date_screen.dart';
 import 'centre_wise_pur_date_screen.dart';
 import 'contractor_screen.dart';
@@ -55,6 +56,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   static const String P_CENTREMILL = "CENTREMILLGATE";
   static const String P_VILLAGE = "VILLAGEWISE";
   static const String P_GRAPH = "GRAPHWISE";
+  static const String GROWER_CELENDAR = "GROWER_CELENDAR";
 
 
 
@@ -329,6 +331,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         if (isAllowed(P_GROWER))
                           dashboardItem("Grower Ledger", Icons.person, Colors.pink, () {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const GrowerLedgerScreen()));
+                          }),
+                        if(isAllowed(GROWER_CELENDAR))
+                          dashboardItem("Grower Calendar", Icons.person, Colors.yellowAccent, () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen()));
                           }),
                         if (isAllowed(P_CONTRACTOR))
                           dashboardItem("Transporter Details", Icons.local_shipping, Colors.brown, () {

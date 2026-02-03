@@ -8,12 +8,14 @@ import '../../models/CntTruckCountInDongaResponse.dart';
 import '../../models/CntTruckCountInGrossResponse.dart';
 import '../../models/CntTruckCountInYardResponsePurchyNo.dart';
 import '../../models/CntTruckCountInYardResponsePurchyNoQty.dart';
+import '../../models/ModeCountItem.dart';
 import '../../models/RoleItem.dart';
 import '../../models/SavePermissionRequest.dart';
 import '../../models/ScreenMasterModel.dart';
 import '../../models/TruckCountInYardResponsePurchyNo.dart';
 import '../../models/TruckCountInYardResponsePurchyNoQty.dart';
 import '../../models/UserItem.dart';
+import '../../models/calendar_models.dart';
 import '../../models/cane_day_data.dart';
 import '../../models/cart_count_donga_response.dart';
 import '../../models/cart_count_purchy_qty_response.dart';
@@ -28,7 +30,9 @@ import '../../models/contractor_model.dart';
 import '../../models/contractor_receipt_model.dart';
 import '../../models/day_wise_centre_graph_model.dart';
 import '../../models/grand_total_response.dart';
+import '../../models/grower_calendar_data.dart';
 import '../../models/hourly_row_model.dart';
+
 import '../../models/plant_model.dart';
 import '../../models/login_request.dart';
 import '../../models/login_response.dart';
@@ -1392,6 +1396,79 @@ class ApiService {
       throw Exception(data['message']);
     }
   }
+
+
+
+
+
+// =========================
+// 📅 GROWER CALENDAR APIs
+// =========================
+  static Future<GrowerDetails> fetchGrowerDetails(
+      String plantCode,
+      String village,
+      String grower,
+      ) async {
+    final res = await post("getGrowerCalendarDetails.php", {
+      "plantCode": plantCode,
+      "in_vill": village,
+      "in_gr_no": grower,
+    });
+
+    if (res["success"] != 1) {
+      throw Exception(res["message"] ?? "Grower details failed");
+    }
+
+    return GrowerDetails.fromJson(res["data"]);
+  }
+
+
+// =========================
+// 🌱 GROWER MODE COUNT API
+// =========================
+  static Future<List<ModeCountItem>> fetchGrowerModeCount(
+      String plantCode,
+      String village,
+      String grower,
+      ) async {
+    final res = await post("getGrowerCalendarcntmodecount.php", {
+      "plantCode": plantCode,
+      "in_vill": village,
+      "in_gr_no": grower,
+    });
+
+    if (res["success"] == 1 && res["data"] != null) {
+      final list = res["data"] as List;
+      return list.map((e) => ModeCountItem.fromJson(e)).toList();
+    } else {
+      return []; // no data
+    }
+  }
+
+
+  static Future<GrowerCalendarData> fetchGrowerCalendarData(
+      String plantCode,
+      String village,
+      String grower,
+      ) async {
+    final res = await post(
+      "getGrowerAreaYieldStatus.php",
+      {
+        "plantCode": plantCode,
+        "in_vill": village,
+        "in_gr_no": grower,
+      },
+    );
+
+    if (res["success"] == 1 && res["data"] != null) {
+      return GrowerCalendarData.fromJson(res["data"]);
+    } else {
+      throw Exception(res["message"] ?? "Calendar data not found");
+    }
+  }
+
+
+
 
 
 
