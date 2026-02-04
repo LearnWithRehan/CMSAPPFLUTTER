@@ -5,7 +5,6 @@ import '../core/api/api_service.dart';
 import '../models/plant_model.dart';
 import 'calendar_details_design.dart';
 
-
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
 
@@ -26,7 +25,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     _loadPlant();
   }
 
-  /// 🔹 Load Plant Code & Name (Same as Java fetchPlantName)
+  /// 🔹 Load Plant Code & Name
   Future<void> _loadPlant() async {
     final sp = await SharedPreferences.getInstance();
     plantCode = sp.getString("PLANT_CODE") ?? "";
@@ -91,101 +90,110 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = MediaQuery.of(context).size.width > 700;
+
     return Scaffold(
+      backgroundColor: const Color(0xFFF4F6F9),
       appBar: AppBar(
-        title: const Text("Grower Calendar"),
-        backgroundColor: const Color(0xFF2C4D76),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+        backgroundColor: const Color(0xFF2E7D32),
+        title: const Text(
+          "Grower Calendar",
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
+        centerTitle: true,
+        elevation: 2,
       ),
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF2C4D76), Color(0xFF6FA8DC)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: isDesktop ? 520 : double.infinity,
           ),
-        ),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 500),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Container(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Card(
+              elevation: 6,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Padding(
                 padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.95),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    )
-                  ],
-                ),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     /// 🏭 PLANT NAME
-                    Text(
-                      plantName.isEmpty ? "Loading..." : plantName,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2C4D76),
-                      ),
+                    Row(
+                      children: [
+                        const Icon(Icons.factory,
+                            color: Color(0xFF2E7D32)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            plantName.isEmpty
+                                ? "Loading..."
+                                : plantName,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2E7D32),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
 
+                    const SizedBox(height: 14),
+                    const Divider(),
+
                     const SizedBox(height: 10),
-                    const Divider(thickness: 1),
-                    const SizedBox(height: 20),
 
                     /// 📅 TITLE
                     const Text(
-                      "GROWER CALENDAR",
+                      "Grower Calendar Details",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                       ),
+                    ),
+
+                    const SizedBox(height: 28),
+
+                    _inputField(
+                      label: "Village Code",
+                      controller: villageController,
+                      icon: Icons.location_on_outlined,
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    _inputField(
+                      label: "Grower Code",
+                      controller: growerController,
+                      icon: Icons.person_outline,
                     ),
 
                     const SizedBox(height: 30),
 
-                    _rowField("VILLAGE", villageController),
-                    const SizedBox(height: 20),
-                    _rowField("GROWER", growerController),
-
-                    const SizedBox(height: 32),
-
                     /// ▶️ SHOW BUTTON
                     SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
+                      height: 48,
+                      child: ElevatedButton.icon(
                         onPressed: _onShow,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2C4D76),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 14,
+                        icon: const Icon(Icons.search),
+                        label: const Text(
+                          "SHOW DETAILS",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
                           ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                          const Color(0xFF7FA481),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          elevation: 5,
-                        ),
-                        child: const Text(
-                          "SHOW",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          elevation: 4,
                         ),
                       ),
                     ),
@@ -199,33 +207,48 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  /// 🔹 Village / Grower Row (XML LinearLayout ka Flutter version)
-  Widget _rowField(String label, TextEditingController controller) {
+  /// 🔹 PROFESSIONAL INPUT FIELD
+  Widget _inputField({
+    required String label,
+    required TextEditingController controller,
+    required IconData icon,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 15,
+          style: TextStyle(
+            fontSize: 13,
             fontWeight: FontWeight.w600,
+            color: Colors.grey.shade700,
           ),
         ),
         const SizedBox(height: 6),
-        Container(
-          height: 48,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade300),
-          ),
-          child: TextField(
-            controller: controller,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              border: InputBorder.none,
-              hintText: "Enter here",
+        TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(
+            prefixIcon: Icon(icon),
+            hintText: "Enter $label",
+            filled: true,
+            fillColor: Colors.grey.shade100,
+            contentPadding:
+            const EdgeInsets.symmetric(vertical: 14),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide:
+              BorderSide(color: Colors.grey.shade300),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide:
+              BorderSide(color: Colors.grey.shade300),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide:
+              const BorderSide(color: Color(0xFF2E7D32)),
             ),
           ),
         ),

@@ -333,7 +333,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const GrowerLedgerScreen()));
                           }),
                         if(isAllowed(GROWER_CELENDAR))
-                          dashboardItem("Grower Calendar", Icons.person, Colors.yellowAccent, () {
+                          dashboardItem("Grower Calendar", Icons.calendar_month, Colors.yellowAccent, () {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen()));
                           }),
                         if (isAllowed(P_CONTRACTOR))
