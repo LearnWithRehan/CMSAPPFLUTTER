@@ -1470,6 +1470,38 @@ class ApiService {
 
 
 
+  static Future<Map<int, Map<int, int>>> fetchIndentCalendar(
+      String plantCode,
+      String village,
+      String grower,
+      ) async {
+    final res = await post("get_indent_calendar.php", {
+      "plantCode": plantCode,
+      "in_vill": village,
+      "in_gr_no": grower,
+    });
+
+    if (res["success"] == 1 && res["data"] != null) {
+      final Map<int, Map<int, int>> result = {};
+
+      (res["data"] as Map<String, dynamic>).forEach((rowKey, cols) {
+        final int r = int.parse(rowKey);
+        result[r] = {};
+
+        (cols as Map<String, dynamic>).forEach((colKey, val) {
+          result[r]![int.parse(colKey)] = val;
+        });
+      });
+
+      return result;
+    } else {
+      throw Exception("Indent calendar load failed");
+    }
+  }
+
+
+
+
 
 
 
