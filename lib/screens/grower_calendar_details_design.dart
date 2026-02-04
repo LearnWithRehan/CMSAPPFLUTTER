@@ -1,0 +1,486 @@
+import 'package:flutter/material.dart';
+import '../core/api/api_service.dart';
+import '../models/ModeCountItem.dart';
+import '../models/calendar_models.dart';
+import '../models/grower_calendar_data.dart';
+import '../models/plant_model.dart';
+
+// ================= DESIGN CONSTANTS =================
+const primaryGreen = Color(0xFF2E7D32);
+const lightGreen = Color(0xFFE8F5E9);
+const headerGreen = Color(0xFF1B5E20);
+const bgColor = Color(0xFFF5F7FA);
+const cardRadius = 14.0;
+
+// ================= RESPONSIVE HELPERS =================
+bool isDesktop(BuildContext context) =>
+    MediaQuery.of(context).size.width >= 900;
+
+class GrowerCalendarDetailsDesign extends StatefulWidget {
+  final String plantCode;
+  final String village;
+  final String grower;
+
+  const GrowerCalendarDetailsDesign({
+    super.key,
+    required this.plantCode,
+    required this.village,
+    required this.grower,
+  });
+
+  @override
+  State<GrowerCalendarDetailsDesign> createState() =>
+      _GrowerCalendarDetailsDesignState();
+}
+
+class _GrowerCalendarDetailsDesignState
+    extends State<GrowerCalendarDetailsDesign> {
+  GrowerDetails? details;
+  List<ModeCountItem> modeItems = [];
+  GrowerCalendarData? calendarData;
+  Map<int, Map<int, int>> indentCalendar = {};
+  String plantName = "";
+
+  bool loading = true;
+  bool indentLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlant();
+    _loadGrowerInfo();
+  }
+
+
+
+
+  Future<void> _loadPlant() async {
+    try {
+      final plants = await ApiService.fetchPlants();
+
+      final plant = plants.firstWhere(
+            (e) => e.plantCode == widget.plantCode,
+        orElse: () => PlantModel(
+          plantCode: widget.plantCode,
+          plantName: "Unknown Plant",
+        ),
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        plantName = plant.plantName;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        plantName = "Server Error";
+      });
+    }
+  }
+
+
+
+  Future<void> _loadGrowerInfo() async {
+    try {
+      final plantCode = widget.plantCode;
+
+      final d = await ApiService.fetchGrowerDetails(
+        plantCode,
+        widget.village,
+        widget.grower,
+      );
+
+      final m = await ApiService.fetchGrowerModeCount(
+        plantCode,
+        widget.village,
+        widget.grower,
+      );
+
+      final c = await ApiService.fetchGrowerCalendarData(
+        plantCode,
+        widget.village,
+        widget.grower,
+      );
+
+      final indent = await ApiService.fetchIndentCalendar(
+        plantCode,
+        widget.village,
+        widget.grower,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        details = d;
+        modeItems = m;
+        calendarData = c;
+        indentCalendar = indent;
+        loading = false;
+        indentLoading = false;
+      });
+    } catch (e) {
+      loading = false;
+      indentLoading = false;
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
+  }
+
+  // ================= MAIN UI =================
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: bgColor,
+      appBar: AppBar(
+        backgroundColor: primaryGreen,
+        centerTitle: true,
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "Grower Calendar",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (plantName.isNotEmpty)
+              Text(
+                plantName,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+          ],
+        ),
+      ),
+      body: loading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+        padding: EdgeInsets.all(isDesktop(context) ? 24 : 12),
+        child: Column(
+          children: [
+            _infoCard(),
+            const SizedBox(height: 12),
+            isDesktop(context)
+                ? Row(
+              children: [
+                Expanded(child: _summaryCard()),
+                const SizedBox(width: 12),
+                Expanded(child: _areaYieldPurchyCard()),
+              ],
+            )
+                : Column(
+              children: [
+                _summaryCard(),
+                const SizedBox(height: 12),
+                _areaYieldPurchyCard(),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _calendarTable(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ================= INFO CARD =================
+  Widget _infoCard() {
+    if (details == null) return const SizedBox();
+    final d = details!;
+
+    return Card(
+      elevation: 5,
+      color: lightGreen,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(cardRadius),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Wrap(
+          spacing: 24,
+          runSpacing: 12,
+          children: [
+            _infoItem("Code", "${widget.village}/${widget.grower}"),
+            _infoItem("Village", d.vName),
+            _infoItem("Grower", d.gName),
+            _infoItem("Father", d.gFather),
+            _infoItem("Society", d.gSocCd),
+            _infoItem("Centre", "${d.cnCode} - ${d.cnName}"),
+            _infoItem("Bank A/C", d.gBankAc),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _infoItem(String title, String value) {
+    return SizedBox(
+      width: 220,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style: const TextStyle(
+                  fontSize: 11,
+                  color: headerGreen,
+                  fontWeight: FontWeight.bold)),
+          const SizedBox(height: 3),
+          Text(value,
+              style: const TextStyle(
+                  fontSize: 13, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  // ================= SUMMARY CARD =================
+  Widget _summaryCard() {
+    if (modeItems.isEmpty) return const SizedBox();
+    final item = modeItems.first;
+
+    String modeText;
+    final mode = int.tryParse(item.mode) ?? 0;
+    if (mode == 1) {
+      modeText = "Cart";
+    } else if (mode == 2) {
+      modeText = "Trolley";
+    } else {
+      modeText = "Truck";
+    }
+
+    return Card(
+      color: lightGreen,
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(cardRadius),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        child: Row(
+          children: [
+            _statTile("Centre", item.centre),
+            _statTile("Mode", modeText),
+            _statTile("Count", item.totalCount),
+            _statTile("Qty", item.totalWt),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _statTile(String label, String value) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(label,
+              style: const TextStyle(
+                  fontSize: 11,
+                  color: headerGreen,
+                  fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text(value,
+              style: const TextStyle(
+                  fontSize: 15, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  // ================= AREA / YIELD / PURCHY =================
+  Widget _areaYieldPurchyCard() {
+    if (calendarData == null) return const SizedBox();
+
+    final areaTotal = calendarData!.areaR + calendarData!.areaP;
+    final yieldTotal = calendarData!.issueR + calendarData!.issueP;
+    final purchyTotal = calendarData!.yieldR + calendarData!.yieldP;
+    final issueTotal = calendarData!.purchyR + calendarData!.purchyP;
+
+    return Card(
+      color: lightGreen,
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(cardRadius),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          children: [
+            _areaHeaderRow(),
+            _areaDataRow("Area",
+                calendarData!.areaR.toStringAsFixed(2),
+                calendarData!.areaP.toStringAsFixed(2),
+                areaTotal.toStringAsFixed(2)),
+            _areaDataRow("Yield",
+                calendarData!.yieldR.toString(),
+                calendarData!.yieldP.toString(),
+                purchyTotal.toString()),
+            _areaDataRow("Purchy",
+                calendarData!.purchyR.toString(),
+                calendarData!.purchyP.toString(),
+                issueTotal.toString()),
+            _areaDataRow("Iss Purchy",
+                calendarData!.issueR.toString(),
+                calendarData!.issueP.toString(),
+                yieldTotal.toString()),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _areaHeaderRow() {
+    return Row(
+      children: const [
+        Expanded(child: SizedBox()),
+        _HeaderCell("General (R)"),
+        _HeaderCell("General (P)"),
+        _HeaderCell("Total"),
+      ],
+    );
+  }
+
+  Widget _areaDataRow(
+      String title, String r, String p, String total) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(title,
+                style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold)),
+          ),
+          _DataCell(r),
+          _DataCell(p),
+          _DataCell(total),
+        ],
+      ),
+    );
+  }
+
+  // ================= CALENDAR TABLE =================
+  Widget _calendarTable() {
+    if (indentLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (indentCalendar.isEmpty) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(14),
+          child: Text("No calendar data found"),
+        ),
+      );
+    }
+
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(cardRadius),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Table(
+          defaultColumnWidth: const FixedColumnWidth(44),
+          border: TableBorder.all(color: Colors.green.shade200),
+          children: [
+            _calendarHeaderRow(),
+            ...indentCalendar.keys.map(_calendarDataRow),
+          ],
+        ),
+      ),
+    );
+  }
+
+  TableRow _calendarHeaderRow() {
+    return TableRow(
+      decoration: const BoxDecoration(color: lightGreen),
+      children: [
+        _tableCell("Day", isHeader: true),
+        for (int i = 1; i <= 15; i++)
+          _tableCell(i.toString(), isHeader: true),
+        _tableCell("Total", isHeader: true),
+      ],
+    );
+  }
+
+  TableRow _calendarDataRow(int rowKey) {
+    final rowData = indentCalendar[rowKey] ?? {};
+    int rowTotal = 0;
+
+    for (int day = 1; day <= 15; day++) {
+      rowTotal += rowData[day] ?? 0;
+    }
+
+    final leftLabel =
+    rowKey <= 4 ? "Rat-$rowKey" : "Pla-$rowKey";
+
+    return TableRow(
+      children: [
+        _tableCell(leftLabel, isHeader: true),
+        for (int day = 1; day <= 15; day++)
+          _tableCell((rowData[day] ?? 0).toString()),
+        _tableCell(rowTotal.toString(), isHeader: true),
+      ],
+    );
+  }
+
+  Widget _tableCell(String text, {bool isHeader = false}) {
+    return Padding(
+      padding: const EdgeInsets.all(6),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
+          color: isHeader ? headerGreen : Colors.black87,
+        ),
+      ),
+    );
+  }
+}
+
+// ================= SMALL WIDGETS =================
+class _HeaderCell extends StatelessWidget {
+  final String text;
+  const _HeaderCell(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: headerGreen),
+      ),
+    );
+  }
+}
+
+class _DataCell extends StatelessWidget {
+  final String text;
+  const _DataCell(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: const TextStyle(fontSize: 12),
+      ),
+    );
+  }
+}

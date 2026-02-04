@@ -4,6 +4,8 @@ import '../../core/api/api_service.dart';
 import '../../models/plant_model.dart';
 import '../core/api/storage/app_storage.dart';
 import '../models/login_request.dart';
+import 'grower_calendar_screen.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -187,6 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
 
+
                       const SizedBox(height: 24),
 
                       /// 🔘 Login Button
@@ -297,6 +300,42 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 14),
+
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const GrowerCalendarScreen(),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(20),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(
+                                Icons.calendar_month,
+                                color: Color(0xFF6A1B9A),
+                                size: 22,
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                "Calendar",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF6A1B9A),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
                     ],
                   ),
                 ),
