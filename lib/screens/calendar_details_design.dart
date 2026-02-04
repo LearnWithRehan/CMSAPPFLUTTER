@@ -7,6 +7,8 @@ import '../models/grower_calendar_data.dart';
 
 // ================= DESIGN CONSTANTS =================
 const primaryGreen = Color(0xFF2E7D32);
+const lightGreen = Color(0xFFE8F5E9);
+const headerGreen = Color(0xFF1B5E20);
 const bgColor = Color(0xFFF5F7FA);
 const cardRadius = 14.0;
 
@@ -158,11 +160,11 @@ class _CalendarDetailsDesignState
   Widget _infoCard() {
     if (details == null) return const SizedBox();
     final d = details!;
-
     final isMobile = MediaQuery.of(context).size.width < 600;
 
     return Card(
-      elevation: 4,
+      elevation: 5,
+      color: lightGreen,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(cardRadius),
       ),
@@ -206,9 +208,10 @@ class _CalendarDetailsDesignState
             width: 90,
             child: Text(
               title,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 11,
-                color: Colors.grey.shade600,
+                color: headerGreen,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -218,6 +221,7 @@ class _CalendarDetailsDesignState
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
+                color: Colors.black87,
               ),
             ),
           ),
@@ -226,17 +230,18 @@ class _CalendarDetailsDesignState
     );
   }
 
-
   Widget _infoItem(String title, String value) {
     return SizedBox(
       width: 220,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const SizedBox(height: 2),
           Text(title,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 11,
-                  color: Colors.grey.shade600)),
+                  color: headerGreen,
+                  fontWeight: FontWeight.bold)),
           const SizedBox(height: 3),
           Text(value,
               style: const TextStyle(
@@ -263,6 +268,8 @@ class _CalendarDetailsDesignState
     }
 
     return Card(
+      color: lightGreen,
+      elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(cardRadius),
       ),
@@ -270,7 +277,7 @@ class _CalendarDetailsDesignState
         padding: const EdgeInsets.symmetric(vertical: 14),
         child: Row(
           children: [
-            _statTile("Centre", item.centre),
+            _statTile("Supply Centre", item.centre),
             _statTile("Mode", modeText),
             _statTile("Count", item.totalCount),
             _statTile("Qty", item.totalWt),
@@ -285,9 +292,10 @@ class _CalendarDetailsDesignState
       child: Column(
         children: [
           Text(label,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 11,
-                  color: Colors.grey.shade600)),
+                  color: headerGreen,
+                  fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
           Text(value,
               style: const TextStyle(
@@ -312,6 +320,8 @@ class _CalendarDetailsDesignState
         calendarData!.purchyR + calendarData!.purchyP;
 
     return Card(
+      color: lightGreen,
+      elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(cardRadius),
       ),
@@ -343,13 +353,17 @@ class _CalendarDetailsDesignState
   }
 
   Widget _areaHeaderRow() {
-    return Row(
-      children: const [
-        Expanded(child: SizedBox()),
-        _HeaderCell("General (R)"),
-        _HeaderCell("General (P)"),
-        _HeaderCell("Total"),
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      color: lightGreen,
+      child: Row(
+        children: const [
+          Expanded(child: SizedBox()),
+          _HeaderCell("General (R)"),
+          _HeaderCell("General (P)"),
+          _HeaderCell("Total"),
+        ],
+      ),
     );
   }
 
@@ -389,6 +403,7 @@ class _CalendarDetailsDesignState
     }
 
     return Card(
+      elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(cardRadius),
       ),
@@ -397,7 +412,7 @@ class _CalendarDetailsDesignState
         child: Table(
           defaultColumnWidth: const FixedColumnWidth(44),
           border: TableBorder.all(
-              color: Colors.grey.shade300),
+              color: Colors.green.shade200),
           children: [
             _calendarHeaderRow(),
             ...indentCalendar.keys.map(_calendarDataRow),
@@ -410,7 +425,7 @@ class _CalendarDetailsDesignState
   TableRow _calendarHeaderRow() {
     return TableRow(
       decoration:
-      BoxDecoration(color: Colors.grey.shade200),
+      BoxDecoration(color: lightGreen),
       children: [
         _tableCell("Day", isHeader: true),
         for (int i = 1; i <= 15; i++)
@@ -423,13 +438,17 @@ class _CalendarDetailsDesignState
   TableRow _calendarDataRow(int rowKey) {
     final rowData = indentCalendar[rowKey] ?? {};
     int rowTotal = 0;
+
     for (int day = 1; day <= 15; day++) {
       rowTotal += rowData[day] ?? 0;
     }
 
+    String leftLabel =
+    rowKey <= 4 ? "Rat-$rowKey" : "Pla-$rowKey";
+
     return TableRow(
       children: [
-        _tableCell("R$rowKey"),
+        _tableCell(leftLabel, isHeader: true),
         for (int day = 1; day <= 15; day++)
           _tableCell((rowData[day] ?? 0).toString()),
         _tableCell(rowTotal.toString(), isHeader: true),
@@ -448,6 +467,7 @@ class _CalendarDetailsDesignState
           fontSize: 11,
           fontWeight:
           isHeader ? FontWeight.bold : FontWeight.normal,
+          color: isHeader ? headerGreen : Colors.black87,
         ),
       ),
     );
@@ -466,7 +486,9 @@ class _HeaderCell extends StatelessWidget {
         text,
         textAlign: TextAlign.center,
         style: const TextStyle(
-            fontSize: 12, fontWeight: FontWeight.bold),
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: headerGreen),
       ),
     );
   }
