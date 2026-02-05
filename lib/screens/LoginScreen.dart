@@ -22,6 +22,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController usernameCtrl = TextEditingController();
   final TextEditingController passwordCtrl = TextEditingController();
 
+  bool _obscurePassword = true;
+
+
   @override
   void initState() {
     super.initState();
@@ -175,19 +178,33 @@ class _LoginScreenState extends State<LoginScreen> {
                       /// 🔐 Password
                       TextField(
                         controller: passwordCtrl,
-                        obscureText: true,
+                        obscureText: _obscurePassword,
                         decoration: InputDecoration(
                           hintText: "Password",
-                          prefixIcon:
-                          const Icon(Icons.lock),
+                          prefixIcon: const Icon(Icons.lock),
+
+                          // 👁️ Eye icon
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
+
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
-                            borderRadius:
-                            BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                       ),
+
 
 
                       const SizedBox(height: 24),
