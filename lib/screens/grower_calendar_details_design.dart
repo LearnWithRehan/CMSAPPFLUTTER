@@ -12,6 +12,9 @@ const headerGreen = Color(0xFF1B5E20);
 const bgColor = Color(0xFFF5F7FA);
 const cardRadius = 14.0;
 
+bool isMobile(BuildContext context) =>
+    MediaQuery.of(context).size.width < 600;
+
 // ================= RESPONSIVE HELPERS =================
 bool isDesktop(BuildContext context) =>
     MediaQuery.of(context).size.width >= 900;
@@ -191,9 +194,40 @@ class _GrowerCalendarDetailsDesignState
   }
 
   // ================= INFO CARD =================
+  // Widget _infoCard() {
+  //   if (details == null) return const SizedBox();
+  //   final d = details!;
+  //
+  //   return Card(
+  //     elevation: 5,
+  //     color: lightGreen,
+  //     shape: RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.circular(cardRadius),
+  //     ),
+  //     child: Padding(
+  //       padding: const EdgeInsets.all(14),
+  //       child: Wrap(
+  //         spacing: 24,
+  //         runSpacing: 12,
+  //         children: [
+  //           _infoItem("Code", "${widget.village}/${widget.grower}"),
+  //           _infoItem("Village", d.vName),
+  //           _infoItem("Grower", d.gName),
+  //           _infoItem("Father", d.gFather),
+  //           _infoItem("Society", d.gSocCd),
+  //           _infoItem("Centre", "${d.cnCode} - ${d.cnName}"),
+  //           _infoItem("Bank A/C", d.gBankAc),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+
+
   Widget _infoCard() {
     if (details == null) return const SizedBox();
     final d = details!;
+    final mobile = isMobile(context);
 
     return Card(
       elevation: 5,
@@ -203,7 +237,21 @@ class _GrowerCalendarDetailsDesignState
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
-        child: Wrap(
+        child: mobile
+        // 📱 MOBILE VIEW
+            ? Column(
+          children: [
+            _infoRow("Code", "${widget.village}/${widget.grower}"),
+            _infoRow("Village", d.vName),
+            _infoRow("Grower", d.gName),
+            _infoRow("Father", d.gFather),
+            _infoRow("Society", d.gSocCd),
+            _infoRow("Centre", "${d.cnCode} - ${d.cnName}"),
+            _infoRow("Bank A/C", d.gBankAc),
+          ],
+        )
+        // 💻 WEB / DESKTOP VIEW
+            : Wrap(
           spacing: 24,
           runSpacing: 12,
           children: [
@@ -219,6 +267,8 @@ class _GrowerCalendarDetailsDesignState
       ),
     );
   }
+
+
 
   Widget _infoItem(String title, String value) {
     return SizedBox(
@@ -239,6 +289,39 @@ class _GrowerCalendarDetailsDesignState
       ),
     );
   }
+
+  Widget _infoRow(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 90,
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 11,
+                color: headerGreen,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   // ================= SUMMARY CARD =================
   Widget _summaryCard() {
@@ -265,7 +348,7 @@ class _GrowerCalendarDetailsDesignState
         padding: const EdgeInsets.symmetric(vertical: 14),
         child: Row(
           children: [
-            _statTile("Centre", item.centre),
+            _statTile("Supply Centre", item.centre),
             _statTile("Mode", modeText),
             _statTile("Count", item.totalCount),
             _statTile("Qty", item.totalWt),
