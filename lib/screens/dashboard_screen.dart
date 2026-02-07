@@ -17,6 +17,7 @@ import 'LoginScreen.dart';
 import 'calendar_screen.dart';
 import 'centre_wise_date_screen.dart';
 import 'centre_wise_pur_date_screen.dart';
+import 'centre_wise_variety_date_screen.dart';
 import 'contractor_screen.dart';
 import 'create_user_screen.dart';
 import 'graph_design_screen.dart';
@@ -57,6 +58,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   static const String P_VILLAGE = "VILLAGEWISE";
   static const String P_GRAPH = "GRAPHWISE";
   static const String GROWER_CELENDAR = "GROWER_CELENDAR";
+  static const String CENTREMILLGATESUMMARY = "CENTREMILLGATESUMMARY";
 
 
 
@@ -331,6 +333,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         if (isAllowed(P_GROWER))
                           dashboardItem("Grower Ledger", Icons.person, Colors.pink, () {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const GrowerLedgerScreen()));
+                          }),
+                        if (isAllowed(CENTREMILLGATESUMMARY))
+                          dashboardItem("Centre Variety Summary", Icons.ad_units, Colors.purpleAccent, () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const CentreWiseVarietyDateScreen()));
                           }),
                         if(isAllowed(GROWER_CELENDAR))
                           dashboardItem("Grower Calendar", Icons.calendar_month, Colors.yellowAccent, () {

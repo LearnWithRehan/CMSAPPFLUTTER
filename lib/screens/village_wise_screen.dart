@@ -151,12 +151,23 @@ class _VillageWiseScreenState extends State<VillageWiseScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+
         /// 🔷 GROUP TITLE ROW
         Row(
           children: [
-            const SizedBox(width: 40 + 60 + 180), // SN + Code + Village
-            groupHeader("TODAY", 70 + 80 + 70 + 80, bg: Colors.blue.shade200),
-            groupHeader("TODATE", 70 + 80 + 70 + 80, bg: Colors.green.shade200),
+            const SizedBox(width: 40 + 60 + 160), // SN + Code + Centre Name
+
+            groupHeader(
+              "TODAY",
+              70 + 70 + 70 + 80,
+              bg: Colors.blue.shade200,
+            ),
+
+            groupHeader(
+              "TODATE",
+              70 + 70 + 70 + 80,
+              bg: Colors.green.shade200,
+            ),
           ],
         ),
 
@@ -165,20 +176,25 @@ class _VillageWiseScreenState extends State<VillageWiseScreen> {
           children: [
             headerCell("SN", 40),
             headerCell("Code", 60),
-            headerCell("Village", 180),
-            headerCell("Cart", 70, bg: Colors.blue.shade100),
-            headerCell("Trolley", 80, bg: Colors.blue.shade100),
-            headerCell("Truck", 70, bg: Colors.blue.shade100),
+            headerCell("Centre Name", 160),
+
+            /// TODAY
+            headerCell("Early", 70, bg: Colors.blue.shade100),
+            headerCell("General", 70, bg: Colors.blue.shade100),
+            headerCell("Reject", 70, bg: Colors.blue.shade100),
             headerCell("Total", 80, bg: Colors.blue.shade100),
-            headerCell("Cart", 70, bg: Colors.green.shade100),
-            headerCell("Trolley", 80, bg: Colors.green.shade100),
-            headerCell("Truck", 70, bg: Colors.green.shade100),
+
+            /// TODATE
+            headerCell("Early", 70, bg: Colors.green.shade100),
+            headerCell("General", 70, bg: Colors.green.shade100),
+            headerCell("Reject", 70, bg: Colors.green.shade100),
             headerCell("Total", 80, bg: Colors.green.shade100),
           ],
         ),
       ],
     );
   }
+
 
   /// 📄 DATA ROW
   Widget tableRow(int sn, VillageWiseItem v) {

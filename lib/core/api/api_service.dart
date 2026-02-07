@@ -25,6 +25,7 @@ import '../../models/centre_kudiya_purchase_model.dart';
 import '../../models/centre_mill_gate_model.dart';
 import '../../models/centre_purchase_model.dart';
 import '../../models/centre_response.dart';
+import '../../models/centre_variety_summary_model.dart';
 import '../../models/centre_wise_total_cane_model.dart';
 import '../../models/contractor_model.dart';
 import '../../models/contractor_receipt_model.dart';
@@ -1499,6 +1500,41 @@ class ApiService {
     }
   }
 
+
+
+
+
+  static Future<List<CentreVarietyItem>> fetchCentreVarietySummary(
+      String plantCode,
+      String date,
+      ) async {
+
+    final response = await http.post(
+      Uri.parse("${ApiConstants.baseUrl}CentreVarietySummary.php"),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: {
+        "plantCode": plantCode,
+        "date": date, // dd-MM-yyyy
+      },
+    );
+
+    debugPrint("API RESPONSE => ${response.body}");
+
+    if (response.statusCode != 200) {
+      throw Exception("Server Error");
+    }
+
+    final jsonData = json.decode(response.body);
+
+    if (jsonData['success'] == 1) {
+      final List list = jsonData['data'];
+      return list.map((e) => CentreVarietyItem.fromJson(e)).toList();
+    } else {
+      return [];
+    }
+  }
 
 
 
