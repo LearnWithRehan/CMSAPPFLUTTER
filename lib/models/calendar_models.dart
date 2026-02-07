@@ -6,6 +6,7 @@ class GrowerDetails {
   final String cnCode;
   final String cnName;
   final String gBankAc;
+  final String gMobile;
 
   GrowerDetails({
     required this.gName,
@@ -15,6 +16,7 @@ class GrowerDetails {
     required this.cnCode,
     required this.cnName,
     required this.gBankAc,
+    required this.gMobile,
   });
 
   factory GrowerDetails.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class GrowerDetails {
       cnCode: json['CN_CODE'] ?? '',
       cnName: json['CN_NAME'] ?? '',
       gBankAc: json['G_BANKAC'] ?? '',
+      gMobile: json['G_MOBILE'] ?? '',
     );
   }
 }

@@ -248,6 +248,7 @@ class _GrowerCalendarDetailsDesignState
             _infoRow("Society", d.gSocCd),
             _infoRow("Centre", "${d.cnCode} - ${d.cnName}"),
             _infoRow("Bank A/C", d.gBankAc),
+            _infoRow("Mobile", d.gMobile),
           ],
         )
         // 💻 WEB / DESKTOP VIEW
@@ -262,6 +263,7 @@ class _GrowerCalendarDetailsDesignState
             _infoItem("Society", d.gSocCd),
             _infoItem("Centre", "${d.cnCode} - ${d.cnName}"),
             _infoItem("Bank A/C", d.gBankAc),
+            _infoItem("Mobile", d.gMobile),
           ],
         ),
       ),

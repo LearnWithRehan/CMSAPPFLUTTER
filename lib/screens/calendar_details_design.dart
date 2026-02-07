@@ -4,6 +4,7 @@ import '../core/api/storage/app_storage.dart';
 import '../models/ModeCountItem.dart';
 import '../models/calendar_models.dart';
 import '../models/grower_calendar_data.dart';
+import 'grower_calendar_details_design.dart';
 
 // ================= DESIGN CONSTANTS =================
 const primaryGreen = Color(0xFF2E7D32);
@@ -157,10 +158,11 @@ class _CalendarDetailsDesignState
   }
 
   // ================= INFO CARD =================
+
   Widget _infoCard() {
     if (details == null) return const SizedBox();
     final d = details!;
-    final isMobile = MediaQuery.of(context).size.width < 600;
+    final mobile = isMobile(context);
 
     return Card(
       elevation: 5,
@@ -170,7 +172,8 @@ class _CalendarDetailsDesignState
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
-        child: isMobile
+        child: mobile
+        // 📱 MOBILE VIEW
             ? Column(
           children: [
             _infoRow("Code", "${widget.village}/${widget.grower}"),
@@ -180,8 +183,10 @@ class _CalendarDetailsDesignState
             _infoRow("Society", d.gSocCd),
             _infoRow("Centre", "${d.cnCode} - ${d.cnName}"),
             _infoRow("Bank A/C", d.gBankAc),
+            _infoRow("Mobile", d.gMobile),
           ],
         )
+        // 💻 WEB / DESKTOP VIEW
             : Wrap(
           spacing: 24,
           runSpacing: 12,
@@ -193,6 +198,7 @@ class _CalendarDetailsDesignState
             _infoItem("Society", d.gSocCd),
             _infoItem("Centre", "${d.cnCode} - ${d.cnName}"),
             _infoItem("Bank A/C", d.gBankAc),
+            _infoItem("Mobile", d.gMobile),
           ],
         ),
       ),
