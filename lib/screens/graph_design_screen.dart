@@ -2,6 +2,7 @@ import 'package:canemanagementsystem/screens/VarietyWiseGraphScreen.dart';
 import 'package:canemanagementsystem/screens/centre_wise_total_cane_graph_screen.dart';
 import 'package:flutter/material.dart';
 import 'cane_trend_graph_screen.dart';
+import 'centre_variety_summary_graph_screen.dart';
 import 'centre_wise_cane_trend_screen.dart';
 
 class GraphDesign_Screen extends StatelessWidget {
@@ -80,6 +81,22 @@ class GraphDesign_Screen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (_) => const VarietyWiseGraphScreen(),
+                  ),
+                );
+              },
+            ),
+
+
+            _reportCard(
+              title: "Day Wise Centre Var Summary",
+              subtitle: "Daily cane arrival analysis by variety Summary",
+              iconColor: Colors.tealAccent,
+              borderColor: Colors.orange,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const CentreVarietySummaryGraphScreen(),
                   ),
                 );
               },
