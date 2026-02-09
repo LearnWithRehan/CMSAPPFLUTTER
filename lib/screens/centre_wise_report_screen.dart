@@ -75,18 +75,23 @@ class _CentreWiseReportScreenState extends State<CentreWiseReportScreen> {
         color: bg,
         border: Border.all(color: Colors.black12),
       ),
-      child: Text(
-        text,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        textAlign: align,
-        style: TextStyle(
-          fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-          fontSize: 13,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: align == TextAlign.right
+            ? Alignment.centerRight
+            : Alignment.center,
+        child: Text(
+          text,
+          textAlign: align,
+          style: TextStyle(
+            fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+            fontSize: 13,
+          ),
         ),
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {

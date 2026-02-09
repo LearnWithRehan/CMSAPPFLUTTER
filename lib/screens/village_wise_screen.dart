@@ -78,14 +78,13 @@ class _VillageWiseScreenState extends State<VillageWiseScreen> {
           : Column(
         children: [
           headerCard(),
-          Expanded(child: dataTable()),
-          totalFixedBottom(),
+          Expanded(child: tableWithTotal()),
         ],
       ),
     );
   }
 
-  /// 🔷 HEADER
+  /// 🔷 HEADER CARD
   Widget headerCard() {
     return Container(
       margin: const EdgeInsets.all(10),
@@ -117,84 +116,61 @@ class _VillageWiseScreenState extends State<VillageWiseScreen> {
     );
   }
 
-  /// 📊 MAIN TABLE (SCROLLABLE)
-  Widget dataTable() {
-    if (list.isEmpty) {
-      return const Center(
-        child: Text("No Data Found",
-            style: TextStyle(fontWeight: FontWeight.bold)),
-      );
-    }
-
+  /// 📊 TABLE + TOTAL (ONE SCROLL ONLY)
+  Widget tableWithTotal() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: SizedBox(
-        width: 880,
+        width: 900,
         child: Column(
           children: [
             tableHeader(),
-            Flexible(
+
+            /// DATA LIST (VERTICAL SCROLL)
+            Expanded(
               child: ListView.builder(
-                shrinkWrap: true,
                 itemCount: list.length,
                 itemBuilder: (_, i) => tableRow(i + 1, list[i]),
               ),
             ),
+
+            /// TOTAL ROW (NOW AUTO SYNC)
+            totalRow(),
           ],
         ),
       ),
     );
   }
 
-  /// 🧱 HEADER ROW
+  /// 🧱 HEADER
   Widget tableHeader() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
-        /// 🔷 GROUP TITLE ROW
         Row(
           children: [
-            const SizedBox(width: 40 + 60 + 160), // SN + Code + Centre Name
-
-            groupHeader(
-              "TODAY",
-              70 + 70 + 70 + 80,
-              bg: Colors.blue.shade200,
-            ),
-
-            groupHeader(
-              "TODATE",
-              70 + 70 + 70 + 80,
-              bg: Colors.green.shade200,
-            ),
+            const SizedBox(width: 40 + 60 + 180),
+            groupHeader("TODAY", 290, Colors.blue.shade200),
+            groupHeader("TODATE", 290, Colors.green.shade200),
           ],
         ),
-
-        /// 🔷 COLUMN HEADER ROW
         Row(
           children: [
             headerCell("SN", 40),
             headerCell("Code", 60),
-            headerCell("Centre Name", 160),
-
-            /// TODAY
-            headerCell("Early", 70, bg: Colors.blue.shade100),
-            headerCell("General", 70, bg: Colors.blue.shade100),
-            headerCell("Reject", 70, bg: Colors.blue.shade100),
+            headerCell("Centre Name", 180),
+            headerCell("Cart", 70, bg: Colors.blue.shade100),
+            headerCell("Trolley", 70, bg: Colors.blue.shade100),
+            headerCell("Truck", 70, bg: Colors.blue.shade100),
             headerCell("Total", 80, bg: Colors.blue.shade100),
-
-            /// TODATE
-            headerCell("Early", 70, bg: Colors.green.shade100),
-            headerCell("General", 70, bg: Colors.green.shade100),
-            headerCell("Reject", 70, bg: Colors.green.shade100),
+            headerCell("Cart", 70, bg: Colors.green.shade100),
+            headerCell("Trolley", 70, bg: Colors.green.shade100),
+            headerCell("Truck", 70, bg: Colors.green.shade100),
             headerCell("Total", 80, bg: Colors.green.shade100),
           ],
         ),
       ],
     );
   }
-
 
   /// 📄 DATA ROW
   Widget tableRow(int sn, VillageWiseItem v) {
@@ -204,53 +180,50 @@ class _VillageWiseScreenState extends State<VillageWiseScreen> {
         cell(v.vCode, 60),
         cell(v.vName, 180),
         cell(v.dayCart.toString(), 70),
-        cell(v.dayTrolley.toString(), 80),
+        cell(v.dayTrolley.toString(), 70),
         cell(v.dayTruck.toString(), 70),
         cell(v.dayWeight.toStringAsFixed(2), 80, color: Colors.blue),
         cell(v.toCart.toString(), 70),
-        cell(v.toTrolley.toString(), 80),
+        cell(v.toTrolley.toString(), 70),
         cell(v.toTruck.toString(), 70),
         cell(v.toWeight.toStringAsFixed(2), 80, color: Colors.green),
       ],
     );
   }
 
-  /// 🔢 TOTAL FIXED BOTTOM
-  Widget totalFixedBottom() {
+  /// 🔢 TOTAL ROW
+  Widget totalRow() {
     return Container(
       color: Colors.blue.shade50,
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            cell("", 40),
-            cell("", 60),
-            cell("TOTAL", 180, bold: true),
-            cell(dayCart.toString(), 70, bold: true),
-            cell(dayTrolley.toString(), 80, bold: true),
-            cell(dayTruck.toString(), 70, bold: true),
-            cell(dayWeight.toStringAsFixed(2), 80,
-                bold: true, color: Colors.blue),
-            cell(toCart.toString(), 70, bold: true),
-            cell(toTrolley.toString(), 80, bold: true),
-            cell(toTruck.toString(), 70, bold: true),
-            cell(toWeight.toStringAsFixed(2), 80,
-                bold: true, color: Colors.green),
-          ],
-        ),
+      child: Row(
+        children: [
+          cell("", 40),
+          cell("", 60),
+          cell("TOTAL", 180, bold: true),
+          cell(dayCart.toString(), 70, bold: true),
+          cell(dayTrolley.toString(), 70, bold: true),
+          cell(dayTruck.toString(), 70, bold: true),
+          cell(dayWeight.toStringAsFixed(2), 80,
+              bold: true, color: Colors.blue),
+          cell(toCart.toString(), 70, bold: true),
+          cell(toTrolley.toString(), 70, bold: true),
+          cell(toTruck.toString(), 70, bold: true),
+          cell(toWeight.toStringAsFixed(2), 80,
+              bold: true, color: Colors.green),
+        ],
       ),
     );
   }
 
   /// 🔹 CELL
-  Widget cell(String text, double w, {bool bold = false, Color? color}) {
+  Widget cell(String text, double w,
+      {bool bold = false, Color? color}) {
     return Container(
       width: w,
-      padding: const EdgeInsets.all(8),
+      height: 36,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.black12),
+        border: Border.all(color: Colors.black26),
       ),
       child: Text(
         text,
@@ -263,41 +236,30 @@ class _VillageWiseScreenState extends State<VillageWiseScreen> {
     );
   }
 
-  Widget groupHeader(String text, double width, {required Color bg}) {
+  Widget groupHeader(String text, double width, Color bg) {
     return Container(
       width: width,
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      height: 34,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: bg,
-        border: Border.all(color: Colors.white),
+        border: Border.all(color: Colors.black26),
       ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 13,
-        ),
-      ),
+      child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold)),
     );
   }
 
   Widget headerCell(String text, double w, {Color? bg}) {
     return Container(
       width: w,
-      padding: const EdgeInsets.all(8),
+      height: 36,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: bg ?? Colors.blueGrey.shade200,
-        border: Border.all(color: Colors.white),
+        border: Border.all(color: Colors.black26),
       ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 13,
-        ),
-      ),
+      child: Text(text,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
     );
   }
 }
