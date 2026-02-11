@@ -441,6 +441,29 @@ class _CalendarDetailsDesignState
     );
   }
 
+  // TableRow _calendarDataRow(int rowKey) {
+  //   final rowData = indentCalendar[rowKey] ?? {};
+  //   int rowTotal = 0;
+  //
+  //   for (int day = 1; day <= 15; day++) {
+  //     rowTotal += rowData[day] ?? 0;
+  //   }
+  //
+  //   String leftLabel =
+  //   rowKey <= 4 ? "Rat-$rowKey" : "Pla-$rowKey";
+  //
+  //   return TableRow(
+  //     children: [
+  //       _tableCell(leftLabel, isHeader: true),
+  //       for (int day = 1; day <= 15; day++)
+  //         _tableCell((rowData[day] ?? 0).toString()),
+  //       _tableCell(rowTotal.toString(), isHeader: true),
+  //     ],
+  //   );
+  // }
+
+
+
   TableRow _calendarDataRow(int rowKey) {
     final rowData = indentCalendar[rowKey] ?? {};
     int rowTotal = 0;
@@ -449,8 +472,8 @@ class _CalendarDetailsDesignState
       rowTotal += rowData[day] ?? 0;
     }
 
-    String leftLabel =
-    rowKey <= 4 ? "Rat-$rowKey" : "Pla-$rowKey";
+    // Sirf Row numbering
+    final leftLabel = "Row-$rowKey";
 
     return TableRow(
       children: [
@@ -461,6 +484,8 @@ class _CalendarDetailsDesignState
       ],
     );
   }
+
+
 
   Widget _tableCell(String text,
       {bool isHeader = false}) {

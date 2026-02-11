@@ -1505,6 +1505,10 @@ class ApiService {
 
 
 
+
+
+
+
   static Future<List<CentreVarietyItem>> fetchCentreVarietySummary(
       String plantCode,
       String date,
