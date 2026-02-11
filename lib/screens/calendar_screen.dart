@@ -81,6 +81,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       context,
       MaterialPageRoute(
         builder: (_) => CalendarDetailsDesign(
+          plantCode: plantCode,
           village: village,
           grower: grower,
         ),

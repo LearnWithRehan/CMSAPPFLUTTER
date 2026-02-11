@@ -4,6 +4,10 @@ import '../models/ModeCountItem.dart';
 import '../models/calendar_models.dart';
 import '../models/grower_calendar_data.dart';
 import '../models/plant_model.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+
 
 // ================= DESIGN CONSTANTS =================
 const primaryGreen = Color(0xFF2E7D32);
@@ -53,6 +57,209 @@ class _GrowerCalendarDetailsDesignState
     _loadPlant();
     _loadGrowerInfo();
   }
+
+
+
+  Future<void> generatePDF() async {
+    final pdf = pw.Document();
+
+    final headerColor = PdfColor.fromInt(0xFF1B5E20);
+    final lightGreen = PdfColor.fromInt(0xFFE8F5E9);
+    final primaryGreen = PdfColor.fromInt(0xFF2E7D32);
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        build: (context) => [
+
+          // ================= HEADER =================
+          pw.Container(
+            padding: const pw.EdgeInsets.all(10),
+            color: primaryGreen,
+            child: pw.Center(
+              child: pw.Column(children: [
+                pw.Text(
+                  "Grower Calendar",
+                  style: pw.TextStyle(
+                    fontSize: 18,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.white,
+                  ),
+                ),
+                pw.Text(
+                  plantName,
+                  style: const pw.TextStyle(
+                    fontSize: 12,
+                    color: PdfColors.white,
+                  ),
+                ),
+              ]),
+            ),
+          ),
+
+          pw.SizedBox(height: 15),
+
+          // ================= INFO CARD =================
+          if (details != null)
+            pw.Container(
+              padding: const pw.EdgeInsets.all(10),
+              color: lightGreen,
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text("Grower Info",
+                      style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          color: headerColor)),
+                  pw.SizedBox(height: 5),
+                  pw.Text("Code : ${widget.village}/${widget.grower}"),
+                  pw.Text("Village : ${details!.vName}"),
+                  pw.Text("Grower : ${details!.gName}"),
+                  pw.Text("Father : ${details!.gFather}"),
+                  pw.Text("Society : ${details!.gSocCd}"),
+                  pw.Text("Centre : ${details!.cnName}"),
+                  pw.Text("Bank A/C : ${details!.gBankAc}"),
+                  pw.Text("Mobile : ${details!.gMobile}"),
+                ],
+              ),
+            ),
+
+          pw.SizedBox(height: 15),
+
+          // ================= SUMMARY =================
+          if (modeItems.isNotEmpty)
+            pw.Container(
+              padding: const pw.EdgeInsets.all(10),
+              color: lightGreen,
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text("Summary",
+                      style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          color: headerColor)),
+                  pw.Text("Centre : ${modeItems.first.centre}"),
+                  pw.Text("Mode : ${modeItems.first.mode}"),
+                  pw.Text("Count : ${modeItems.first.totalCount}"),
+                  pw.Text("Qty : ${modeItems.first.totalWt}"),
+                ],
+              ),
+            ),
+
+          pw.SizedBox(height: 15),
+
+          // ================= AREA / YIELD TABLE =================
+          if (calendarData != null)
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+
+                pw.Text("Area / Yield / Purchy",
+                    style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        color: headerColor)),
+
+                pw.SizedBox(height: 8),
+
+                pw.Table(
+                  border: pw.TableBorder.all(),
+                  children: [
+
+                    // HEADER
+                    pw.TableRow(
+                      decoration: pw.BoxDecoration(color: lightGreen),
+                      children: [
+                        pw.Center(child: pw.Text("")),
+                        pw.Center(child: pw.Text("General (R)")),
+                        pw.Center(child: pw.Text("General (P)")),
+                        pw.Center(child: pw.Text("Total")),
+                      ],
+                    ),
+
+                    _pdfRow("Area",
+                        calendarData!.areaR.toStringAsFixed(2),
+                        calendarData!.areaP.toStringAsFixed(2),
+                        (calendarData!.areaR + calendarData!.areaP).toStringAsFixed(2)),
+
+                    _pdfRow("Yield",
+                        calendarData!.yieldR.toString(),
+                        calendarData!.yieldP.toString(),
+                        (calendarData!.yieldR + calendarData!.yieldP).toString()),
+
+                    _pdfRow("Purchy",
+                        calendarData!.purchyR.toString(),
+                        calendarData!.purchyP.toString(),
+                        (calendarData!.purchyR + calendarData!.purchyP).toString()),
+
+                    _pdfRow("Iss Purchy",
+                        calendarData!.issueR.toString(),
+                        calendarData!.issueP.toString(),
+                        (calendarData!.issueR + calendarData!.issueP).toString()),
+                  ],
+                ),
+              ],
+            ),
+
+          pw.SizedBox(height: 15),
+
+          // ================= CALENDAR TABLE =================
+          if (indentCalendar.isNotEmpty)
+            pw.Table(
+              border: pw.TableBorder.all(),
+              children: [
+
+                pw.TableRow(
+                  decoration: pw.BoxDecoration(color: lightGreen),
+                  children: [
+                    pw.Center(child: pw.Text("Day")),
+                    ...List.generate(
+                        15,
+                            (i) => pw.Center(child: pw.Text("${i + 1}"))),
+                    pw.Center(child: pw.Text("Total")),
+                  ],
+                ),
+
+                ...indentCalendar.keys.map((rowKey) {
+
+                  final rowData = indentCalendar[rowKey] ?? {};
+                  int rowTotal = 0;
+
+                  List<pw.Widget> cells = [];
+
+                  cells.add(pw.Center(child: pw.Text("Row-$rowKey")));
+
+                  for (int day = 1; day <= 15; day++) {
+                    final value = rowData[day] ?? 0;
+                    rowTotal += value;
+
+                    cells.add(pw.Center(child: pw.Text(value.toString())));
+                  }
+
+                  cells.add(pw.Center(child: pw.Text(rowTotal.toString())));
+
+                  return pw.TableRow(children: cells);
+                }).toList(),
+              ],
+            ),
+        ],
+      ),
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+    );
+  }
+
+// reusable pdf row
+  pw.TableRow _pdfRow(String title, String r, String p, String total) {
+    return pw.TableRow(children: [
+      pw.Text(title),
+      pw.Center(child: pw.Text(r)),
+      pw.Center(child: pw.Text(p)),
+      pw.Center(child: pw.Text(total)),
+    ]);
+  }
+
 
 
 
@@ -160,7 +367,18 @@ class _GrowerCalendarDetailsDesignState
                 ),
               ),
           ],
+
         ),
+        actions: [
+          Tooltip(
+            message: "Convert PDF",
+            child: IconButton(
+              icon: const Icon(Icons.picture_as_pdf),
+              onPressed: generatePDF,
+            ),
+          ),
+        ],
+
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
