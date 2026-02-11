@@ -68,6 +68,20 @@ class _CalendarDetailsDesignState
     final lightGreen = PdfColor.fromInt(0xFFE8F5E9);
     final primaryGreen = PdfColor.fromInt(0xFF2E7D32);
 
+    final now = DateTime.now();
+
+    final hour = now.hour > 12 ? now.hour - 12 : now.hour;
+    final amPm = now.hour >= 12 ? "PM" : "AM";
+
+    final formattedDate =
+        "${now.day.toString().padLeft(2, '0')}-"
+        "${now.month.toString().padLeft(2, '0')}-"
+        "${now.year}  "
+        "${hour.toString().padLeft(2, '0')}:"
+        "${now.minute.toString().padLeft(2, '0')} $amPm";
+
+
+
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
@@ -77,26 +91,47 @@ class _CalendarDetailsDesignState
           pw.Container(
             padding: const pw.EdgeInsets.all(10),
             color: primaryGreen,
-            child: pw.Center(
-              child: pw.Column(children: [
-                pw.Text(
-                  "Grower Calendar",
-                  style: pw.TextStyle(
-                    fontSize: 18,
-                    fontWeight: pw.FontWeight.bold,
-                    color: PdfColors.white,
+            child: pw.Column(
+              children: [
+
+                pw.Center(
+                  child: pw.Text(
+                    "Grower Calendar",
+                    style: pw.TextStyle(
+                      fontSize: 18,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.white,
+                    ),
                   ),
                 ),
-                pw.Text(
-                  plantName,
-                  style: const pw.TextStyle(
-                    fontSize: 12,
-                    color: PdfColors.white,
+
+                pw.Center(
+                  child: pw.Text(
+                    plantName,
+                    style: const pw.TextStyle(
+                      fontSize: 12,
+                      color: PdfColors.white,
+                    ),
                   ),
                 ),
-              ]),
+
+                pw.SizedBox(height: 5),
+
+                // ✅ GENERATED DATE
+                pw.Align(
+                  alignment: pw.Alignment.centerRight,
+                  child: pw.Text(
+                    "Generated On : $formattedDate",
+                    style: const pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
+
 
           pw.SizedBox(height: 15),
 
