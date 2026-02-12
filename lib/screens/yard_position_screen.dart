@@ -33,7 +33,6 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
 
   double grandTotalPurchase = 0.0;
 
-
   /// ================= CENTRE RECEIPT VALUES =================
   int cnttruckInYard = 0;
   int cnttruckInDonga = 0;
@@ -46,23 +45,21 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
   int totalPurNo = 0;
   double totalTodayQty = 0.0;
 
-  double grandTotal = 0;
   bool isLoading = true;
 
-
+  final Color primaryColor = const Color(0xFF1B5E20);
+  final Color bgColor = const Color(0xFFF1F8E9);
 
   @override
   void initState() {
     super.initState();
-    isLoading = true;
     _initAll();
   }
 
   Future<void> _initAll() async {
-    await _loadSelectedDate(); // load selected date
-    await loadData(); // load plant name
+    await _loadSelectedDate();
+    await loadData();
 
-    // load all API data
     await loadCartCount();
     await loadCartCountDonga();
     await loadCartPurchyNo();
@@ -81,32 +78,25 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
     await loadCntTruckPurchyQty();
     await loadGrandTotalPurchase();
 
-
     _calculateTotals();
 
-    // ✅ STOP LOADING
-    setState(() {
-      isLoading = false;
-    });
+    setState(() => isLoading = false);
   }
 
-  /// ================= CALCULATE TOTALS =================
   void _calculateTotals() {
     totalInYard = cartInYard + trolleyInYard + truckInYard + cnttruckInYard;
     totalInDonga = cartInDonga + trolleyInDonga + truckInDonga + cnttruckInDonga;
     totalPurNo = cartPurNo + trolleyPurNo + truckPurNo + cnttruckPurNo;
-    totalTodayQty = cartPurQty + trolleyTodayQty + truckTodayQty + cnttruckTodayQty;
-
-    setState(() {});
+    totalTodayQty =
+        cartPurQty + trolleyTodayQty + truckTodayQty + cnttruckTodayQty;
   }
 
+  /// ================= API METHODS =================
 
   Future<void> loadGrandTotalPurchase() async {
     try {
       if (selectedDate.isEmpty) return;
-
       final res = await ApiService.getGrandTotal(selectedDate);
-
       if (res.success == 1) {
         setState(() {
           grandTotalPurchase = res.grandTotal;
@@ -117,9 +107,6 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
     }
   }
 
-
-
-  /// ================= API LOADERS =================
   Future<void> loadCartCount() async {
     try {
       final res = await ApiService.getCartCount();
@@ -272,110 +259,209 @@ class _YardPositionScreenState extends State<YardPositionScreen> {
     }
   }
 
-  /// ================= LOAD PREF + PLANT =================
   Future<void> loadData() async {
     final sp = await SharedPreferences.getInstance();
     final plantCode = sp.getString("PLANT_CODE");
-    if (plantCode != null) plantName = await ApiService.fetchPlantNameByCode(plantCode);
+    if (plantCode != null) {
+      plantName = await ApiService.fetchPlantNameByCode(plantCode);
+    }
     setState(() {});
   }
 
-  /// ================= LOAD DATE =================
   Future<void> _loadSelectedDate() async {
     final prefs = await SharedPreferences.getInstance();
     selectedDate = prefs.getString("SELECTED_DATE") ?? "";
     setState(() {});
   }
 
-  /// ================= UI HELPERS =================
-  Widget cell(String text, {bool bold = false}) {
-    return Expanded(
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 14, fontWeight: bold ? FontWeight.bold : FontWeight.normal),
+  /// ================= UI =================
+
+  Widget buildRow(List<String> values,
+      {bool isHeader = false, bool isTotal = false}) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+      decoration: BoxDecoration(
+        color: isHeader
+            ? primaryColor.withOpacity(0.1)
+            : isTotal
+            ? Colors.orange.withOpacity(0.2)
+            : Colors.white,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: values
+            .map(
+              (e) => Expanded(
+            child: Text(
+              e,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontWeight:
+                isHeader || isTotal ? FontWeight.bold : FontWeight.w500,
+                fontSize: 14,
+                color: isHeader ? primaryColor : Colors.black87,
+              ),
+            ),
+          ),
+        )
+            .toList(),
       ),
     );
   }
 
-  Widget row(List<String> values, {bool bold = false}) {
+  Widget sectionTitle(String text) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(children: values.map((e) => cell(e, bold: bold)).toList()),
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Center(
+        child: Text(
+          text,
+          style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: primaryColor),
+        ),
+      ),
     );
   }
 
-  Widget titleLine(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Center(child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold))),
+  Widget cardWrapper(Widget child) {
+    return Card(
+      elevation: 6,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: child,
+      ),
     );
   }
 
-  /// ================= UI =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Yard Position"), centerTitle: true),
+      backgroundColor: bgColor,
+      appBar: AppBar(
+        title: const Text("Yard Position"),
+        centerTitle: true,
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF1B5E20), Color(0xFF43A047)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+      ),
       body: isLoading
-          ? const Center(
-        child: CircularProgressIndicator(), // 🔄 ANDROID JAISE
-      )
-      : SingleChildScrollView(
-        padding: const EdgeInsets.all(12),
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// PLANT NAME
-            Center(
-              child: Text(
-                plantName.isEmpty ? "Cane Management System" : plantName,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+            cardWrapper(
+              Column(
+                children: [
+                  Text(
+                    plantName.isEmpty
+                        ? "Cane Management System"
+                        : plantName,
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: primaryColor),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    "Yard Position as on $selectedDate",
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 12),
-
-            /// DATE
-            Row(
-              children: [
-                const Expanded(child: Text("Yard Position as on Date:")),
-                Text(selectedDate, style: const TextStyle(fontWeight: FontWeight.bold)),
-              ],
-            ),
-            const Divider(),
-
-            /// HEADER
-            row(["Supply", "InYard", "InDonga", "Pur No", "TodayPur(Qty)"], bold: true),
-
-            /// ================= AT GATE =================
-            titleLine("----------- AT GATE -----------"),
-            row(["Cart", "$cartInYard", "$cartInDonga", "$cartPurNo", "${cartPurQty.toStringAsFixed(2)}"]),
-            row(["Trolley", "$trolleyInYard", "$trolleyInDonga", "$trolleyPurNo", "${trolleyTodayQty.toStringAsFixed(2)}"]),
-            row(["Truck", "$truckInYard", "$truckInDonga", "$truckPurNo", "${truckTodayQty.toStringAsFixed(2)}"]),
-
-            /// ================= CENTRE =================
-            titleLine("------- CENTRE RECEIPT -------"),
-            row(["Truck", "$cnttruckInYard", "$cnttruckInDonga", "$cnttruckPurNo", "${cnttruckTodayQty.toStringAsFixed(2)}"]),
-
-            titleLine("==================================="),
-            row([
-              "Total",
-              "$totalInYard",
-              "$totalInDonga",
-              "$totalPurNo",
-              "${totalTodayQty.toStringAsFixed(2)}"
-            ], bold: true),
-            titleLine("==================================="),
-
-            const SizedBox(height: 10),
-            Text(
-              "Todate Purchase : ${grandTotalPurchase.toStringAsFixed(2)}",
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
+            const SizedBox(height: 20),
+            cardWrapper(
+              Column(
+                children: [
+                  buildRow(
+                      ["Supply", "InYard", "InDonga", "Pur No", "Qty"],
+                      isHeader: true),
+                  sectionTitle("AT GATE"),
+                  buildRow([
+                    "Cart",
+                    "$cartInYard",
+                    "$cartInDonga",
+                    "$cartPurNo",
+                    cartPurQty.toStringAsFixed(2)
+                  ]),
+                  buildRow([
+                    "Trolley",
+                    "$trolleyInYard",
+                    "$trolleyInDonga",
+                    "$trolleyPurNo",
+                    trolleyTodayQty.toStringAsFixed(2)
+                  ]),
+                  buildRow([
+                    "Truck",
+                    "$truckInYard",
+                    "$truckInDonga",
+                    "$truckPurNo",
+                    truckTodayQty.toStringAsFixed(2)
+                  ]),
+                  sectionTitle("CENTRE RECEIPT"),
+                  buildRow([
+                    "Truck",
+                    "$cnttruckInYard",
+                    "$cnttruckInDonga",
+                    "$cnttruckPurNo",
+                    cnttruckTodayQty.toStringAsFixed(2)
+                  ]),
+                  const SizedBox(height: 10),
+                  buildRow([
+                    "TOTAL",
+                    "$totalInYard",
+                    "$totalInDonga",
+                    "$totalPurNo",
+                    totalTodayQty.toStringAsFixed(2)
+                  ], isTotal: true),
+                ],
               ),
             ),
-
+            const SizedBox(height: 20),
+            Card(
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.deepOrange, Colors.orange],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      "TODATE PURCHASE",
+                      style: TextStyle(
+                          color: Colors.white70,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      grandTotalPurchase.toStringAsFixed(2),
+                      style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
