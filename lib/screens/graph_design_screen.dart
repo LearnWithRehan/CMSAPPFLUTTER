@@ -1,5 +1,5 @@
-import 'package:canemanagementsystem/screens/VarietyWiseGraphScreen.dart';
-import 'package:canemanagementsystem/screens/centre_wise_total_cane_graph_screen.dart';
+import 'package:CMS/screens/VarietyWiseGraphScreen.dart';
+import 'package:CMS/screens/centre_wise_total_cane_graph_screen.dart';
 import 'package:flutter/material.dart';
 import 'cane_trend_graph_screen.dart';
 import 'centre_variety_summary_graph_screen.dart';

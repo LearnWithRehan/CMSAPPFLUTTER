@@ -1,11 +1,10 @@
-// (All your imports same — kuchh remove nahi kiya)
-import 'package:canemanagementsystem/screens/role_master_screen.dart';
-import 'package:canemanagementsystem/screens/screen_master_screen.dart';
-import 'package:canemanagementsystem/screens/show_yard_data_screen.dart';
-import 'package:canemanagementsystem/screens/variety_wise_date_screen.dart';
-import 'package:canemanagementsystem/screens/village_wise_date_screen.dart';
-import 'package:canemanagementsystem/screens/wb_control_screen.dart';
-import 'package:canemanagementsystem/screens/wb_range_screen.dart';
+import 'package:CMS/screens/role_master_screen.dart';
+import 'package:CMS/screens/screen_master_screen.dart';
+import 'package:CMS/screens/show_yard_data_screen.dart';
+import 'package:CMS/screens/variety_wise_date_screen.dart';
+import 'package:CMS/screens/village_wise_date_screen.dart';
+import 'package:CMS/screens/wb_control_screen.dart';
+import 'package:CMS/screens/wb_range_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api/api_service.dart';
@@ -201,18 +200,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                     ),
-                    InkWell(
-                      onTap: () async {
-                        final sp = await SharedPreferences.getInstance();
-                        await sp.clear();
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (_) => const LoginScreen()),
-                              (route) => false,
-                        );
-                      },
-                      child: const Icon(Icons.logout, color: Colors.white),
-                    )
+                    Tooltip(
+                      message: "LogOut",
+                      textStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black87,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: InkWell(
+                        onTap: () async {
+                          final sp = await SharedPreferences.getInstance();
+                          await sp.clear();
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginScreen()),
+                                (route) => false,
+                          );
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.all(6.0),
+                          child: Icon(Icons.logout, color: Colors.white),
+                        ),
+                      ),
+                    ),
+
                   ],
                 ),
               ),
@@ -339,7 +353,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const CentreWiseVarietyDateScreen()));
                           }),
                         if(isAllowed(GROWER_CELENDAR))
-                          dashboardItem("Grower Calendar", Icons.calendar_month, Colors.yellowAccent, () {
+                          dashboardItem("Grower Calendar", Icons.calendar_month, Colors.greenAccent, () {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen()));
                           }),
                         if (isAllowed(P_CONTRACTOR))
@@ -380,10 +394,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
 
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Text("Version 1.0.0",
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.green.shade50, Colors.green.shade100],
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.agriculture, size: 16, color: Colors.green),
+                        SizedBox(width: 6),
+                        Text(
+                          "Empowering Sugar Mills with Smart Technology",
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

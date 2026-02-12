@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:canemanagementsystem/core/api/api_service.dart';
-import 'package:canemanagementsystem/core/api/storage/app_storage.dart';
+import 'package:CMS/core/api/api_service.dart';
+import 'package:CMS/core/api/storage/app_storage.dart';
 import '../../models/RoleItem.dart';
 import '../../models/UserItem.dart';
 

@@ -1,4 +1,4 @@
-import 'package:canemanagementsystem/screens/dashboard_screen.dart';
+import 'package:CMS/screens/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 import '../../core/api/api_service.dart';
 import '../../models/plant_model.dart';

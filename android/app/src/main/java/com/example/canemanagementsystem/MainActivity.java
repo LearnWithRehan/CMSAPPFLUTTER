@@ -1,4 +1,4 @@
-package com.example.canemanagementsystem;
+package com.example.CMS;
 
 import io.flutter.embedding.android.FlutterActivity;
 

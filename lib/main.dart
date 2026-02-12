@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:canemanagementsystem/screens/SplashScreen.dart';
+import 'package:CMS/screens/SplashScreen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
