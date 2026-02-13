@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api/api_service.dart';
 import '../core/api/storage/app_storage.dart';
-import '../widgets/ip_location_service.dart';
 import 'CENTREMILLGATEDATE_SCREEN.dart';
 import 'GrowerLedgerScreen.dart';
 import 'LoginScreen.dart';
@@ -22,6 +21,9 @@ import 'create_user_screen.dart';
 import 'graph_design_screen.dart';
 import 'hourly_crushing_date_screen.dart';
 import 'dart:async';
+import '../services/ip_location_service.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -70,23 +72,133 @@ class _DashboardScreenState extends State<DashboardScreen> {
     loadIpLocation();
   }
 
-  Future<void> loadIpLocation() async {
-    try {
-      final loc = await IpLocationService.fetchLocation();
+  // Future<void> loadGpsLocation() async {
+  //   try {
+  //     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  //     if (!serviceEnabled) {
+  //       setState(() {
+  //         locationText = "Location service disabled";
+  //       });
+  //       return;
+  //     }
+  //
+  //     LocationPermission permission = await Geolocator.checkPermission();
+  //
+  //     if (permission == LocationPermission.denied) {
+  //       permission = await Geolocator.requestPermission();
+  //     }
+  //
+  //     if (permission == LocationPermission.deniedForever) {
+  //       setState(() {
+  //         locationText = "Permission denied permanently";
+  //       });
+  //       return;
+  //     }
+  //
+  //     Position position = await Geolocator.getCurrentPosition(
+  //         desiredAccuracy: LocationAccuracy.high);
+  //
+  //     List<Placemark> placemarks =
+  //     await placemarkFromCoordinates(position.latitude, position.longitude);
+  //
+  //     Placemark place = placemarks.first;
+  //
+  //     setState(() {
+  //       locationText = "${place.locality}, ${place.country}";
+  //     });
+  //   } catch (e) {
+  //     setState(() {
+  //       locationText = "Location not available";
+  //     });
+  //   }
+  // }
 
+
+
+
+
+  // Future<void> loadIpLocation() async {
+  //   try {
+  //     final loc = await IpLocationService.fetchLocation();
+  //
+  //     setState(() {
+  //       if (loc['city']!.isNotEmpty) {
+  //         locationText = "${loc['city']}, ${loc['country']}";
+  //       } else {
+  //         locationText = "Location not available";
+  //       }
+  //     });
+  //   } catch (e) {
+  //     setState(() {
+  //       locationText = "Location not available";
+  //     });
+  //   }
+  // }
+
+
+
+  Future<void> loadIpLocation() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // 🔹 1️⃣ Load cached location first
+    String? savedLocation = prefs.getString("saved_location");
+
+    if (mounted && savedLocation != null && savedLocation.isNotEmpty) {
       setState(() {
-        if (loc['city']!.isNotEmpty) {
-          locationText = "${loc['city']}, ${loc['country']}";
-        } else {
-          locationText = "Location not available";
-        }
-      });
-    } catch (e) {
-      setState(() {
-        locationText = "Location not available";
+        locationText = savedLocation;
       });
     }
+
+    // 🔹 2️⃣ Retry system (3 attempts)
+    for (int attempt = 1; attempt <= 3; attempt++) {
+      try {
+        print("Location fetch attempt: $attempt");
+
+        final loc = await IpLocationService.fetchLocation()
+            .timeout(const Duration(seconds: 12));
+
+        print("API Response: $loc");
+
+        final city = loc['city']?.toString().trim();
+        final country = loc['country']?.toString().trim();
+
+        if (city != null &&
+            city.isNotEmpty &&
+            country != null &&
+            country.isNotEmpty) {
+
+          String newLocation = "$city, $country";
+
+          // 🔹 Save latest successful location
+          await prefs.setString("saved_location", newLocation);
+
+          if (mounted) {
+            setState(() {
+              locationText = newLocation;
+            });
+          }
+
+          print("Location Success: $newLocation");
+          return; // ✅ Stop retry loop
+        }
+
+      } catch (e) {
+        print("Location Error on attempt $attempt: $e");
+        await Future.delayed(const Duration(seconds: 2));
+      }
+    }
+
+    // 🔹 3️⃣ Final fallback
+    if (mounted) {
+      setState(() {
+        locationText = savedLocation ?? "Location not available";
+      });
+    }
+
+    print("All attempts failed.");
   }
+
+
 
 
   void startClock() {
