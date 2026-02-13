@@ -223,7 +223,15 @@ class _HourlyCrushingDateScreenState extends State<HourlyCrushingDateScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF2C4D76),
                         ),
-                        child: const Text("PROCESS"),
+                        child: const Text(
+                          "PROCESS",
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            letterSpacing: 1,
+                          ),
+                        ),
                       ),
                     ),
                   ],
